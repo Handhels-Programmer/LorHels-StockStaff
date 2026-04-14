@@ -795,21 +795,9 @@
 
         window.manejarUsuarioDeslogueado = function() {
             usuarioActual = null;
-            
-            // 🚨 CORRECCIÓN: Verificamos si la URL tiene el código del equipo (Escaneo QR)
-            const parametrosURL = new URLSearchParams(window.location.search);
-            const idEquipoEscaneado = parametrosURL.get('ver_equipo');
-
-            if (idEquipoEscaneado) {
-                // Si alguien escaneó el QR, mantenemos la pantalla de Login OCULTA
-                document.getElementById('view-login').classList.add('hidden');
-                // La función comprobarSiVienePorEscaneoQR() se encargará de mostrar la tarjeta
-            } else {
-                // Si es una visita normal a la web, mostramos el login
-                document.getElementById('view-login').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('hidden');
-                document.getElementById('app-container').classList.remove('flex');
-            }
+            document.getElementById('view-login').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('flex');
         };
 
         document.getElementById('form-login').addEventListener('submit', async function(e) {
@@ -1609,14 +1597,14 @@
         // ==========================================
         // DETECCIÓN DE ESCANEO (LECTOR DE URL)
         // ==========================================
-        // Si alguien entra a la página y la URL dice "?ver_equipo=ID_SECRETO", no le pedimos contraseña, le mostramos el equipo.
-        async function comprobarSiVienePorEscaneoQR() {
+        window.comprobarSiVienePorEscaneoQR = async function() {
             const parametrosURL = new URLSearchParams(window.location.search);
             const idEquipoEscaneado = parametrosURL.get('ver_equipo');
 
             if (idEquipoEscaneado) {
-                // Ocultamos la pantalla de Login inmediatamente
+                // Nos aseguramos de ocultar el login y la app normal
                 document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('app-container').classList.add('hidden');
                 
                 // Mostramos la vista pública
                 const vistaPublica = document.getElementById('view-publico-qr');
@@ -1624,38 +1612,36 @@
                 vistaPublica.classList.add('flex');
 
                 try {
-                    // Esperamos un milisegundo a que Firebase despierte y traemos los datos de ese equipo específico
-                    setTimeout(async () => {
-                        const equipoRef = window.doc(window.db, "equipos", idEquipoEscaneado);
-                        const docSnap = await window.getDoc(equipoRef);
+                    // Firebase ya está listo, así que leemos la base de datos directamente
+                    const equipoRef = window.doc(window.db, "equipos", idEquipoEscaneado);
+                    const docSnap = await window.getDoc(equipoRef);
 
-                        if (docSnap.exists()) {
-                            const eq = docSnap.data();
-                            
-                            document.getElementById('pub-nombre').innerText = eq.nombre;
-                            document.getElementById('pub-codigo').innerText = eq.codigo || 'Sin código interno';
-                            document.getElementById('pub-asignado').innerHTML = `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${eq.asignadoA || '<span class="italic text-slate-600">No asignado</span>'}`;
-                            document.getElementById('pub-marca').innerText = `${eq.marca} ${eq.modelo || ''}`;
-                            document.getElementById('pub-tipo').innerText = eq.tipo;
-                            document.getElementById('pub-serie').innerText = eq.serie || 'N/A';
+                    if (docSnap.exists()) {
+                        const eq = docSnap.data();
+                        
+                        document.getElementById('pub-nombre').innerText = eq.nombre;
+                        document.getElementById('pub-codigo').innerText = eq.codigo || 'Sin código interno';
+                        document.getElementById('pub-asignado').innerHTML = `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${eq.asignadoA || '<span class="italic text-slate-600">No asignado</span>'}`;
+                        document.getElementById('pub-marca').innerText = `${eq.marca} ${eq.modelo || ''}`;
+                        document.getElementById('pub-tipo').innerText = eq.tipo;
+                        document.getElementById('pub-serie').innerText = eq.serie || 'N/A';
 
-                            // Estilos del estado
-                            const badge = document.getElementById('pub-estado');
-                            badge.innerText = eq.estado;
-                            badge.className = "inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ";
-                            
-                            if(eq.estado === 'Disponible') badge.className += "bg-purple-500/10 text-purple-400 border-purple-500/20";
-                            else if(eq.estado === 'Asignado') badge.className += "bg-green-500/10 text-green-400 border-green-500/20";
-                            else if(eq.estado === 'En reparación') badge.className += "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-                            else badge.className += "bg-red-500/10 text-red-400 border-red-500/20";
+                        // Estilos del estado
+                        const badge = document.getElementById('pub-estado');
+                        badge.innerText = eq.estado;
+                        badge.className = "inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ";
+                        
+                        if(eq.estado === 'Disponible') badge.className += "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                        else if(eq.estado === 'Asignado') badge.className += "bg-green-500/10 text-green-400 border-green-500/20";
+                        else if(eq.estado === 'En reparación') badge.className += "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                        else badge.className += "bg-red-500/10 text-red-400 border-red-500/20";
 
-                            lucide.createIcons();
-                        } else {
-                            document.getElementById('pub-nombre').innerText = "Equipo no encontrado";
-                            document.getElementById('pub-codigo').innerText = "El código escaneado no es válido o el equipo fue eliminado.";
-                            document.getElementById('pub-estado').style.display = 'none';
-                        }
-                    }, 500); // Pequeño retraso para asegurar que db está listo
+                        lucide.createIcons();
+                    } else {
+                        document.getElementById('pub-nombre').innerText = "Equipo no encontrado";
+                        document.getElementById('pub-codigo').innerText = "El equipo fue eliminado o no existe.";
+                        document.getElementById('pub-estado').style.display = 'none';
+                    }
                 } catch (error) {
                     console.error("Error leyendo QR:", error);
                     document.getElementById('pub-nombre').innerText = "Error de conexión";
@@ -1669,9 +1655,6 @@
             window.location.reload();
         }
 
-        // Ejecutar la comprobación tan pronto cargue la página
-        window.onload = comprobarSiVienePorEscaneoQR;
-
     </script>
 
     <script type="module">
@@ -1680,12 +1663,12 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCJFvU_79q8BiOrsV3WqqzQk1Xru6nozJ8",
-            authDomain: "lorhels-stockstaff.firebaseapp.com",
-            projectId: "lorhels-stockstaff",
-            storageBucket: "lorhels-stockstaff.firebasestorage.app",
-            messagingSenderId: "259287416427",
-            appId: "1:259287416427:web:8fb74ec2cdec82a562fb2e"
+            apiKey: "AIzaSyA640_DXwhEU1tLEvoPyJiUNmm1t4qu7uo",
+            authDomain: "heinsen-stockstaff.firebaseapp.com",
+            projectId: "heinsen-stockstaff",
+            storageBucket: "heinsen-stockstaff.firebasestorage.app",
+            messagingSenderId: "755879092395",
+            appId: "1:755879092395:web:9cce29ea0de578ffd4d7ee"
         };
 
         const app = initializeApp(firebaseConfig); 
@@ -1697,7 +1680,24 @@
         window.getDoc = getDoc; window.setDoc = setDoc; window.query = query; window.where = where;
         window.auth = auth; window.signInWithEmailAndPassword = signInWithEmailAndPassword; window.signOut = signOut;
 
-        onAuthStateChanged(auth, (user) => { if (user) window.manejarUsuarioLogueado(user); else window.manejarUsuarioDeslogueado(); });
+        // EL "GUARDIA" DE FIREBASE
+        onAuthStateChanged(auth, (user) => { 
+            const parametrosURL = new URLSearchParams(window.location.search);
+            const idEquipoEscaneado = parametrosURL.get('ver_equipo');
+
+            if (idEquipoEscaneado) {
+                // PRIORIDAD 1: Si hay un escaneo de QR, ignoramos el login y mostramos la tarjeta
+                window.comprobarSiVienePorEscaneoQR();
+            } else {
+                // PRIORIDAD 2: Flujo normal de la app (pedir contraseña o entrar)
+                if (user) {
+                    window.manejarUsuarioLogueado(user);
+                } else {
+                    // Restauramos la función original de deslogueo
+                    window.manejarUsuarioDeslogueado();
+                }
+            }
+        });
     </script>
 </body>
 </html>
