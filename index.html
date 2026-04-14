@@ -795,9 +795,21 @@
 
         window.manejarUsuarioDeslogueado = function() {
             usuarioActual = null;
-            document.getElementById('view-login').classList.remove('hidden');
-            document.getElementById('app-container').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('flex');
+            
+            // 🚨 CORRECCIÓN: Verificamos si la URL tiene el código del equipo (Escaneo QR)
+            const parametrosURL = new URLSearchParams(window.location.search);
+            const idEquipoEscaneado = parametrosURL.get('ver_equipo');
+
+            if (idEquipoEscaneado) {
+                // Si alguien escaneó el QR, mantenemos la pantalla de Login OCULTA
+                document.getElementById('view-login').classList.add('hidden');
+                // La función comprobarSiVienePorEscaneoQR() se encargará de mostrar la tarjeta
+            } else {
+                // Si es una visita normal a la web, mostramos el login
+                document.getElementById('view-login').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('flex');
+            }
         };
 
         document.getElementById('form-login').addEventListener('submit', async function(e) {
@@ -1659,7 +1671,7 @@
 
         // Ejecutar la comprobación tan pronto cargue la página
         window.onload = comprobarSiVienePorEscaneoQR;
-        
+
     </script>
 
     <script type="module">
