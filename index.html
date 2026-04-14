@@ -1602,17 +1602,20 @@
             const idEquipoEscaneado = parametrosURL.get('ver_equipo');
 
             if (idEquipoEscaneado) {
-                // Nos aseguramos de ocultar el login y la app normal
+                // 1. Ocultamos el login y la aplicación principal
                 document.getElementById('view-login').classList.add('hidden');
                 document.getElementById('app-container').classList.add('hidden');
                 
-                // Mostramos la vista pública
+                // 2. ✨ TRUCO DE MAGIA: Sacamos la vista del QR de su caja y la pegamos en la raíz de la página
                 const vistaPublica = document.getElementById('view-publico-qr');
+                document.body.appendChild(vistaPublica); 
+                
+                // 3. Ahora sí, la mostramos con seguridad
                 vistaPublica.classList.remove('hidden');
                 vistaPublica.classList.add('flex');
 
                 try {
-                    // Firebase ya está listo, así que leemos la base de datos directamente
+                    // Firebase ya está listo, leemos la base de datos
                     const equipoRef = window.doc(window.db, "equipos", idEquipoEscaneado);
                     const docSnap = await window.getDoc(equipoRef);
 
