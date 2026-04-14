@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LorHels StockStaff</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], } } }
+        }
+    </script>
+
+    <style>
+        /* Ocultar elementos de navegación al imprimir */
+        @media print {
+            #sidebar, header, #panel-filtros-reporte { display: none !important; }
+            #app-container, main, .flex-1 { height: auto !important; overflow: visible !important; }
+            body { background-color: white !important; color: black !important; }
+            .bg-slate-900 { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important;}
+            .text-white, .text-slate-300, .text-slate-400 { color: black !important; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans flex overflow-hidden min-h-screen">
+
+    <div id="view-login" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-black">
+            <div class="flex justify-center mb-6">
+                <div class="bg-blue-600 p-3 rounded-xl text-white shadow-lg shadow-blue-600/20">
+                    <i data-lucide="monitor-smartphone" class="w-10 h-10"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-center text-white mb-2">Bienvenido a LorHels StockStaff</h2>
+            <p class="text-slate-400 text-center text-sm mb-8">Ingresa tus credenciales para continuar</p>
+
+            <form id="form-login" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                        <input type="email" id="login-email" required placeholder="tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                    </div>
+                </div>
+                <p id="login-error" class="text-red-400 text-xs hidden text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20"></p>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2 flex justify-center items-center gap-2">
+                    Ingresar <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden w-full flex overflow-hidden min-h-screen">
+        
+        <div id="mobile-overlay" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden cursor-pointer" onclick="toggleSidebar()"></div>
+
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transform transition-transform duration-300 ease-in-out flex flex-col -translate-x-full md:translate-x-0">
+            <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+                <div class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
+                    <div class="bg-blue-600 p-1.5 rounded-lg text-white"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
+                    <span class="font-bold text-lg text-white transition-opacity duration-300">LorHels StockStaff</span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" id="nav-menu">
+                <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative bg-blue-600/10 text-blue-400" data-active="true">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-400"></i><span class="font-medium text-sm">Dashboard</span>
+                    <div class="active-indicator absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+                <button onclick="switchTab('equipos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="monitor-smartphone" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Equipos</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+                <button onclick="switchTab('personal', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="users" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Personal</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+                
+                <button id="nav-accesos" onclick="switchTab('accesos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="shield" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Accesos</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+
+                <button onclick="switchTab('departamentos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="building-2" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Departamentos</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+
+                <button onclick="switchTab('taller', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="wrench" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Taller</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+
+                <button id="nav-reportes" onclick="switchTab('reportes', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                    <i data-lucide="file-bar-chart" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Reportes</span>
+                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-blue-900 border-2 border-blue-500 flex items-center justify-center text-blue-300 font-bold shrink-0" id="user-avatar-letter">U</div>
+                        <div class="overflow-hidden transition-opacity duration-300">
+                            <p id="sidebar-user-email" class="text-sm font-medium text-white truncate w-32">Cargando...</p>
+                            <p id="sidebar-user-role" class="text-xs text-blue-400 uppercase tracking-wider font-semibold">ROL</p>
+                        </div>
+                    </div>
+                    <button onclick="cerrarSesion()" class="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-slate-800"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+            <header class="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8">
+                <div class="mb-8">
+                    <h1 id="page-title" class="text-2xl font-bold text-white capitalize">Dashboard</h1>
+                    <p id="page-subtitle" class="text-slate-400 text-sm mt-1">Resumen general.</p>
+                </div>
+
+                <div id="view-dashboard" class="view-section block space-y-6">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                            <div class="p-3 rounded-lg bg-blue-400/10 text-blue-400"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
+                            <div><p class="text-slate-400 text-sm font-medium">Total Equipos</p><h3 id="dash-total" class="text-2xl font-bold text-white">0</h3></div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                            <div class="p-3 rounded-lg bg-green-400/10 text-green-400"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
+                            <div><p class="text-slate-400 text-sm font-medium">Asignados</p><h3 id="dash-asignados" class="text-2xl font-bold text-white">0</h3></div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                            <div class="p-3 rounded-lg bg-purple-400/10 text-purple-400"><i data-lucide="package" class="w-6 h-6"></i></div>
+                            <div><p class="text-slate-400 text-sm font-medium">Disponibles</p><h3 id="dash-disponibles" class="text-2xl font-bold text-white">0</h3></div>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                            <div class="p-3 rounded-lg bg-red-400/10 text-red-400"><i data-lucide="wrench" class="w-6 h-6"></i></div>
+                            <div><p class="text-slate-400 text-sm font-medium">En Reparación</p><h3 id="dash-reparacion" class="text-2xl font-bold text-white">0</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
+                            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                                <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="bell-ring" class="w-5 h-5 text-yellow-400"></i> Alertas de Equipos</h2>
+                                <button onclick="cargarDashboard()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="p-5 flex-1 overflow-y-auto space-y-3" id="dash-alertas">
+                                <p class="text-center text-slate-500 text-sm mt-10">Cargando alertas...</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
+                            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                                <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="building" class="w-5 h-5 text-blue-400"></i> Distribución de Equipos</h2>
+                            </div>
+                            <div class="p-5 flex-1 overflow-y-auto space-y-4" id="dash-deptos">
+                                <p class="text-center text-slate-500 text-sm mt-10">Calculando distribución...</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="view-placeholder" class="view-section hidden">
+                    <div class="h-64 border-2 border-dashed border-slate-800 rounded-xl flex items-center justify-center text-slate-500 flex-col gap-4">
+                        <i data-lucide="hammer" class="w-8 h-8 text-slate-600"></i><p id="placeholder-text">En construcción...</p>
+                    </div>
+                </div>
+
+                <div id="view-equipos" class="view-section hidden space-y-6">
+                    <div id="panel-registro-equipos" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
+                        <h2 class="text-lg font-semibold text-white mb-4">Registrar Nuevo Equipo</h2>
+                        <form id="form-equipo" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="lg:col-span-2">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del equipo</label>
+                                    <input type="text" id="eq-nombre" required placeholder="Ej: Monitor UltraSharp 27" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Código Interno (QR)</label>
+                                    <div class="relative">
+                                        <i data-lucide="qr-code" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                        <input type="text" id="eq-codigo" required placeholder="HS-0001" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Tipo de Equipo</label>
+                                    <select id="eq-tipo" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                        <option value="Laptop">Laptop</option><option value="Desktop (CPU)">Desktop (CPU)</option>
+                                        <option value="Móvil">Móvil</option><option value="Pantalla">Pantalla / Monitor</option>
+                                        <option value="Herramienta">Herramienta</option><option value="Periférico">Periférico (Teclado/Mouse)</option>
+                                        <option value="Otro">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Marca</label>
+                                    <input type="text" id="eq-marca" required placeholder="Ej: Dell" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Modelo</label>
+                                    <input type="text" id="eq-modelo" required placeholder="Ej: U2720Q" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Número de Serie</label>
+                                    <input type="text" id="eq-serie" required placeholder="S/N..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">IMEI (Opcional)</label>
+                                    <input type="text" id="eq-imei" placeholder="Solo para móviles..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Dirección MAC (Opcional)</label>
+                                    <input type="text" id="eq-mac" placeholder="00:1B..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Ubicación Física</label>
+                                    <div class="relative">
+                                        <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                                        <input type="text" id="eq-ubicacion" required placeholder="Ej: Almacén" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Estado Inicial</label>
+                                    <select id="eq-estado" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                        <option value="Disponible">Disponible</option><option value="Asignado">Asignado</option>
+                                        <option value="En reparación">En reparación</option><option value="Dañado">Dañado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2 border-t border-slate-800 mt-4">
+                                <button type="submit" id="btn-guardar" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2 mt-4">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Guardar Equipo
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-white">Inventario de Equipos</h2>
+                            <button onclick="cargarEquipos()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Código</th>
+                                        <th class="p-4 font-medium">Equipo / Serie</th>
+                                        <th class="p-4 font-medium">Estado</th>
+                                        <th class="p-4 font-medium">Asignado / Ubicación</th>
+                                        <th class="p-4 font-medium text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-equipos" class="divide-y divide-slate-800/50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-personal" class="view-section hidden space-y-6">
+                    <div id="panel-registro-personal" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
+                        <div class="flex items-center gap-3 mb-4 border-b border-slate-800 pb-4">
+                            <div class="p-2 rounded-lg bg-green-500/10 text-green-400"><i data-lucide="user-plus" class="w-5 h-5"></i></div>
+                            <h2 class="text-lg font-semibold text-white">Registrar Empleado</h2>
+                        </div>
+                        <form id="form-personal" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Nombre Completo</label>
+                                    <input type="text" id="pers-nombre" required placeholder="Ej: Juan Pérez" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
+                                    <input type="email" id="pers-email" required placeholder="juan@heinsen.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Contacto / Teléfono</label>
+                                    <input type="text" id="pers-contacto" placeholder="Ej: 809-555-0192" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Departamento</label>
+                                    <select id="pers-departamento" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                        <option value="">Cargando departamentos...</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Cargo</label>
+                                    <input type="text" id="pers-cargo" required placeholder="Ej: Analista de Datos" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Estado</label>
+                                    <select id="pers-estado" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                        <option value="Activo">Activo</option><option value="Inactivo">Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2 border-t border-slate-800 mt-4">
+                                <button type="submit" id="btn-guardar-pers" class="bg-green-600 hover:bg-green-500 text-white text-sm font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2 mt-4">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Guardar Empleado
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-white">Directorio de Personal</h2>
+                            <button onclick="cargarPersonal()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Empleado</th>
+                                        <th class="p-4 font-medium">Departamento / Cargo</th>
+                                        <th class="p-4 font-medium">Contacto</th>
+                                        <th class="p-4 font-medium">Estado</th>
+                                        <th class="p-4 font-medium text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-personal" class="divide-y divide-slate-800/50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-accesos" class="view-section hidden space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                            <div>
+                                <h2 class="text-lg font-semibold text-white">Gestión de Accesos de Usuarios</h2>
+                                <p class="text-xs text-slate-400 mt-1">Controla quién puede crear, editar o solo ver en el sistema.</p>
+                            </div>
+                            <button onclick="cargarUsuarios()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Usuario (Correo)</th>
+                                        <th class="p-4 font-medium">Fecha Registro</th>
+                                        <th class="p-4 font-medium">Rol Actual</th>
+                                        <th class="p-4 font-medium text-right">Cambiar Rol</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-usuarios" class="divide-y divide-slate-800/50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-taller" class="view-section hidden space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-red-500/5">
+                            <div>
+                                <h2 class="text-lg font-semibold text-red-400 flex items-center gap-2">
+                                    <i data-lucide="wrench" class="w-5 h-5"></i> Equipos en Reparación
+                                </h2>
+                                <p class="text-xs text-slate-400 mt-1">Gestiona los equipos que se encuentran actualmente en el taller.</p>
+                            </div>
+                            <button onclick="cargarTaller()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Código / S/N</th>
+                                        <th class="p-4 font-medium">Equipo</th>
+                                        <th class="p-4 font-medium">Último Asignado</th>
+                                        <th class="p-4 font-medium">Fecha de Registro</th>
+                                        <th class="p-4 font-medium text-right">Acciones de Taller</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-taller" class="divide-y divide-slate-800/50 text-sm">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-reportes" class="view-section hidden space-y-6">
+                    
+                    <div id="panel-filtros-reporte" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
+                        <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="file-bar-chart" class="w-5 h-5 text-blue-400"></i> Generador de Reportes
+                        </h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Filtrar por Estado</label>
+                                <select id="rep-filtro-estado" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                    <option value="">Todos los Estados</option>
+                                    <option value="Disponible">Disponibles</option>
+                                    <option value="Asignado">Asignados</option>
+                                    <option value="En reparación">En taller</option>
+                                    <option value="Dañado">Dañados</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Filtrar por Tipo</label>
+                                <select id="rep-filtro-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                    <option value="">Todos los Tipos</option>
+                                    <option value="Laptop">Laptop</option>
+                                    <option value="Desktop (CPU)">Desktop (CPU)</option>
+                                    <option value="Móvil">Móvil</option>
+                                    <option value="Pantalla">Pantalla / Monitor</option>
+                                    <option value="Herramienta">Herramienta</option>
+                                    <option value="Periférico">Periférico</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Filtrar por Departamento</label>
+                                <select id="rep-filtro-depto" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                    <option value="">Cargando departamentos...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap justify-end gap-3 pt-4 border-t border-slate-800">
+                            <button onclick="generarReporte()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i data-lucide="search" class="w-4 h-4"></i> Generar
+                            </button>
+                            <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i> Excel (CSV)
+                            </button>
+                            <button onclick="imprimirReporte()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-4 border-b border-slate-800 bg-slate-800/30 flex justify-between items-center">
+                            <h3 class="font-semibold text-white">Resultados del Reporte</h3>
+                            <span id="rep-resumen" class="text-xs font-bold bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">0 equipos</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-3 font-medium">Código / S/N</th>
+                                        <th class="p-3 font-medium">Equipo</th>
+                                        <th class="p-3 font-medium">Tipo</th>
+                                        <th class="p-3 font-medium">Estado</th>
+                                        <th class="p-3 font-medium">Asignado a / Depto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-reportes" class="divide-y divide-slate-800/50 text-sm">
+                                    <tr><td colspan="5" class="text-center p-8 text-slate-500 italic">Selecciona los filtros y haz clic en "Generar"</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-departamentos" class="view-section hidden space-y-6">
+                    <div id="panel-registro-departamentos" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
+                        <div class="flex items-center gap-3 mb-4 border-b border-slate-800 pb-4">
+                            <div class="p-2 rounded-lg bg-orange-500/10 text-orange-400">
+                                <i data-lucide="building-2" class="w-5 h-5"></i>
+                            </div>
+                            <h2 class="text-lg font-semibold text-white">Crear Departamento</h2>
+                        </div>
+                        <form id="form-departamento" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Departamento</label>
+                                    <input type="text" id="dep-nombre" required placeholder="Ej: Recursos Humanos, IT, Ventas..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Responsable / Gerente</label>
+                                    <div>
+                                    <select id="dep-responsable" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500">
+                                        <option value="">Cargando supervisores...</option>
+                                    </select>
+                                </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end pt-2 border-t border-slate-800 mt-4">
+                                <button type="submit" id="btn-guardar-dep" class="bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2 mt-2">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Guardar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold text-white">Estructura Organizacional</h2>
+                            <button onclick="cargarDepartamentos()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-4 font-medium">Departamento</th>
+                                        <th class="p-4 font-medium">Responsable</th>
+                                        <th class="p-4 font-medium text-center">Personal</th>
+                                        <th class="p-4 font-medium text-center">Equipos Asignados</th>
+                                        <th class="p-4 font-medium text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-departamentos" class="divide-y divide-slate-800/50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div id="modal-editar" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+                    <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-white">Editar / Asignar Equipo</h3>
+                        <button onclick="cerrarModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <form id="form-editar" class="p-5 space-y-4">
+                        <input type="hidden" id="edit-id">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Nombre</label>
+                            <input type="text" id="edit-nombre" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white" placeholder="Nombre">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Estado</label>
+                            <select id="edit-estado" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
+                                <option value="Disponible">Disponible</option><option value="Asignado">Asignado</option>
+                                <option value="En reparación">En reparación</option><option value="Dañado">Dañado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Asignado a (Seleccionar Empleado)</label>
+                            <select id="edit-asignado" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                                <option value="">-- Sin asignar --</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="cerrarModal()" class="px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Cancelar</button>
+                            <button type="submit" id="btn-actualizar" class="px-4 py-2 text-white bg-blue-600 hover:bg-blue-500 rounded-lg text-sm">Actualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="modal-perfil" class="hidden fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]">
+                    <div class="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-800/50 rounded-t-2xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg" id="perfil-avatar">J</div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white" id="perfil-nombre">Cargando...</h3>
+                                <p class="text-sm text-slate-400 mt-1" id="perfil-cargo-depto">Cargando cargo y depto...</p>
+                                <p class="text-xs text-blue-400 mt-1 flex items-center gap-1"><i data-lucide="mail" class="w-3 h-3"></i> <span id="perfil-email">correo@heinsen.com</span></p>
+                            </div>
+                        </div>
+                        <button onclick="cerrarModalPerfil()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <h4 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="monitor-smartphone" class="w-4 h-4 text-blue-400"></i> Equipos Asignados Actualmente
+                        </h4>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th class="p-3 font-medium">Código</th>
+                                        <th class="p-3 font-medium">Equipo</th>
+                                        <th class="p-3 font-medium">S/N</th>
+                                        <th class="p-3 font-medium">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-perfil-equipos" class="divide-y divide-slate-800/50 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modal-editar-depto" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
+                    <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-white">Editar Departamento</h3>
+                        <button onclick="cerrarModalDepto()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <form id="form-editar-depto" class="p-5 space-y-4">
+                        <input type="hidden" id="edit-dep-id">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Departamento</label>
+                            <input type="text" id="edit-dep-nombre" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Responsable</label>
+                            <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Responsable (Supervisores)</label>
+                            <select id="edit-dep-responsable" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                                <option value="">Cargando supervisores...</option>
+                            </select>
+                        </div>
+                        </div>
+                        <div class="flex justify-end gap-3 pt-4">
+                            <button type="button" onclick="cerrarModalDepto()" class="px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Cancelar</button>
+                            <button type="submit" id="btn-actualizar-depto" class="px-4 py-2 text-white bg-orange-600 hover:bg-orange-500 rounded-lg text-sm">Actualizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('mobile-overlay').classList.toggle('hidden');
+        }
+
+        function switchTab(tabName, buttonElement) {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('bg-blue-600/10', 'text-blue-400');
+                btn.classList.add('text-slate-400', 'hover:bg-slate-800/50', 'hover:text-slate-200');
+                const icon = btn.querySelector('svg'); if(icon) icon.classList.remove('text-blue-400');
+                btn.querySelector('.active-indicator').classList.add('hidden');
+            });
+
+            buttonElement.classList.add('bg-blue-600/10', 'text-blue-400');
+            buttonElement.classList.remove('text-slate-400');
+            const activeIcon = buttonElement.querySelector('svg'); if(activeIcon) activeIcon.classList.add('text-blue-400');
+            buttonElement.querySelector('.active-indicator').classList.remove('hidden');
+
+            document.getElementById('page-title').innerText = tabName;
+
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.add('hidden'); view.classList.remove('block', 'flex');
+            });
+
+            // Mostrar vista seleccionada
+            if (tabName === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden'); document.getElementById('view-dashboard').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Resumen general y estado del inventario.";
+                cargarDashboard();
+            } else if (tabName === 'equipos') {
+                document.getElementById('view-equipos').classList.remove('hidden'); document.getElementById('view-equipos').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Gestión y registro de equipos.";
+                cargarEquipos();
+            } else if (tabName === 'personal') {
+                document.getElementById('view-personal').classList.remove('hidden'); document.getElementById('view-personal').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Gestión de empleados y contactos.";
+                cargarPersonal(); 
+                cargarSelectDepartamentos(); 
+            } else if (tabName === 'accesos') {
+                document.getElementById('view-accesos').classList.remove('hidden'); document.getElementById('view-accesos').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Control de roles del sistema.";
+                cargarUsuarios();
+            } else if (tabName === 'departamentos') {
+                document.getElementById('view-departamentos').classList.remove('hidden'); 
+                document.getElementById('view-departamentos').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Estructura y métricas por departamento.";
+                cargarDepartamentos();
+                cargarSelectSupervisores(); // ¡NUEVO! Carga la lista de responsables
+           } else if (tabName === 'taller') {
+                document.getElementById('view-taller').classList.remove('hidden'); 
+                document.getElementById('view-taller').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Centro de servicio y reparaciones.";
+                cargarTaller(); 
+            } else if (tabName === 'reportes') {
+                // ¡NUEVO! Lógica para Reportes
+                document.getElementById('view-reportes').classList.remove('hidden'); 
+                document.getElementById('view-reportes').classList.add('block');
+                document.getElementById('page-subtitle').innerText = "Generación de reportes y exportación de datos.";
+                cargarFiltrosReportes();
+                generarReporte(); // Generar un reporte global por defecto al entrar
+            } else {
+                const p = document.getElementById('view-placeholder');
+                p.classList.remove('hidden'); p.classList.add('flex');
+                document.getElementById('placeholder-text').innerText = `El módulo de ${tabName.toUpperCase()} está en construcción...`;
+            }
+            if (window.innerWidth < 768) toggleSidebar();
+        }
+
+        let usuarioActual = null; 
+
+        // ------------------------------------
+        // LÓGICA AUTH Y ACCESOS
+        // ------------------------------------
+        window.manejarUsuarioLogueado = async function(userAuth) {
+            const userRef = window.doc(window.db, "usuarios", userAuth.uid);
+            let userSnap = await window.getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                const rolInicial = (userAuth.email === 'admin@heinsen.com') ? 'admin' : 'usuario';
+                await window.setDoc(userRef, { email: userAuth.email, rol: rolInicial, fechaRegistro: new Date().toLocaleDateString() });
+                userSnap = await window.getDoc(userRef);
+            }
+
+            usuarioActual = userSnap.data();
+            usuarioActual.uid = userAuth.uid;
+
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('flex');
+
+            document.getElementById('sidebar-user-email').innerText = usuarioActual.email;
+            document.getElementById('user-avatar-letter').innerText = usuarioActual.email.charAt(0).toUpperCase();
+            document.getElementById('sidebar-user-role').innerText = usuarioActual.rol;
+
+            aplicarPermisos();
+            cargarDashboard(); // ¡AÑADIR ESTA LÍNEA!
+        };
+
+        window.manejarUsuarioDeslogueado = function() {
+            usuarioActual = null;
+            document.getElementById('view-login').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('flex');
+        };
+
+        document.getElementById('form-login').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login'); const err = document.getElementById('login-error');
+            err.classList.add('hidden'); btn.innerHTML = "Verificando..."; btn.disabled = true;
+            try { await window.signInWithEmailAndPassword(window.auth, email, password); } 
+            catch (error) { err.innerText = "Correo o contraseña incorrectos."; err.classList.remove('hidden'); } 
+            finally { btn.innerHTML = 'Ingresar <i data-lucide="arrow-right" class="w-4 h-4"></i>'; lucide.createIcons(); btn.disabled = false; }
+        });
+
+        function cerrarSesion() { window.signOut(window.auth); }
+
+        // CORRECCIÓN 3: Ocultar módulo de departamentos a usuarios sin permisos
+        function aplicarPermisos() {
+            const panelRegistro = document.getElementById('panel-registro-equipos');
+            const panelPersonal = document.getElementById('panel-registro-personal');
+            const panelDeptos = document.getElementById('panel-registro-departamentos'); 
+            const navAccesos = document.getElementById('nav-accesos');
+
+            if (usuarioActual && usuarioActual.rol === 'usuario') {
+                panelRegistro.style.display = 'none'; 
+                panelPersonal.style.display = 'none';
+                panelDeptos.style.display = 'none'; 
+            } else {
+                panelRegistro.style.display = 'block'; 
+                panelPersonal.style.display = 'block';
+                panelDeptos.style.display = 'block'; 
+            }
+            
+            navAccesos.style.display = (usuarioActual && usuarioActual.rol === 'admin') ? 'flex' : 'none';
+        }
+
+        async function cargarUsuarios() {
+            if(usuarioActual.rol !== 'admin') return; 
+            const tbody = document.getElementById('tbody-usuarios');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-slate-400">Cargando usuarios...</td></tr>';
+            try {
+                const snapshot = await window.getDocs(window.collection(window.db, "usuarios"));
+                tbody.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const usr = doc.data(); const id = doc.id;
+                    let colorRol = "text-slate-400 bg-slate-800"; 
+                    if(usr.rol === 'admin') colorRol = "text-purple-400 bg-purple-500/10 border-purple-500/20";
+                    if(usr.rol === 'supervisor') colorRol = "text-blue-400 bg-blue-500/10 border-blue-500/20";
+                    const disableSelect = (usr.email === 'admin@heinsen.com') ? 'disabled' : '';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="p-4 font-medium text-white flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-slate-500"></i> ${usr.email}</td>
+                            <td class="p-4 text-slate-400">${usr.fechaRegistro || 'N/A'}</td>
+                            <td class="p-4"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border uppercase ${colorRol}">${usr.rol}</span></td>
+                            <td class="p-4 text-right">
+                                <select onchange="cambiarRolUsuario('${id}', this.value)" ${disableSelect} class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-300 focus:outline-none focus:border-blue-500">
+                                    <option value="usuario" ${usr.rol === 'usuario' ? 'selected' : ''}>Usuario</option>
+                                    <option value="supervisor" ${usr.rol === 'supervisor' ? 'selected' : ''}>Supervisor</option>
+                                    <option value="admin" ${usr.rol === 'admin' ? 'selected' : ''}>Administrador</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `;
+                }); lucide.createIcons();
+            } catch (error) { console.error(error); }
+        }
+
+        window.cambiarRolUsuario = async function(uid, nuevoRol) {
+            try { await window.updateDoc(window.doc(window.db, "usuarios", uid), { rol: nuevoRol }); cargarUsuarios(); } 
+            catch (error) { console.error(error); alert("Error al actualizar rol"); }
+        }
+
+        // ------------------------------------
+        // LÓGICA EQUIPOS
+        // ------------------------------------
+        document.getElementById('form-equipo').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol === 'usuario') return;
+
+            const btn = document.getElementById('btn-guardar'); btn.innerHTML = "Guardando..."; btn.disabled = true;
+            try {
+                const nuevoEquipo = {
+                    codigo: document.getElementById('eq-codigo').value, nombre: document.getElementById('eq-nombre').value,
+                    tipo: document.getElementById('eq-tipo').value, marca: document.getElementById('eq-marca').value, 
+                    modelo: document.getElementById('eq-modelo').value, serie: document.getElementById('eq-serie').value,
+                    imei: document.getElementById('eq-imei').value, mac: document.getElementById('eq-mac').value,
+                    ubicacion: document.getElementById('eq-ubicacion').value, estado: document.getElementById('eq-estado').value, 
+                    asignadoA: "", registradoPor: usuarioActual.email, fechaRegistro: new Date().toISOString() 
+                };
+                
+                await window.addDoc(window.collection(window.db, "equipos"), nuevoEquipo);
+                document.getElementById('form-equipo').reset(); cargarEquipos();
+            } catch (error) { console.error(error); alert("Error al guardar."); } 
+            finally { btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Equipo'; lucide.createIcons(); btn.disabled = false; }
+        });
+
+        async function cargarEquipos() {
+            const tbody = document.getElementById('tbody-equipos'); tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-400">Cargando...</td></tr>';
+            try {
+                const snapshot = await window.getDocs(window.collection(window.db, "equipos")); tbody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-500">No hay equipos.</td></tr>'; return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const eq = doc.data(); const id = doc.id;
+                    let badgeColor = "bg-purple-500/10 text-purple-400 border-purple-500/20"; 
+                    if(eq.estado === 'Asignado') badgeColor = "bg-green-500/10 text-green-400 border-green-500/20";
+                    if(eq.estado === 'En reparación') badgeColor = "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                    if(eq.estado === 'Dañado') badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
+
+                    const botonesAccion = (usuarioActual.rol === 'admin' || usuarioActual.rol === 'supervisor') ? `
+                        <button onclick="abrirModal('${id}', '${eq.nombre}', '${eq.estado}', '${eq.asignadoA}')" class="text-blue-400 hover:text-blue-300 p-1.5 bg-blue-400/10 rounded" title="Editar">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        ${usuarioActual.rol === 'admin' ? `<button onclick="eliminarEquipo('${id}')" class="text-red-400 hover:text-red-300 p-1.5 bg-red-400/10 rounded" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                    ` : '';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/30 transition-colors group">
+                            <td class="p-4"><div class="flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-slate-500"></i><span class="font-medium text-slate-300">${eq.codigo || 'N/A'}</span></div></td>
+                            <td class="p-4"><p class="font-medium text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''} • S/N: ${eq.serie || 'N/A'}</p></td>
+                            <td class="p-4"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeColor}">${eq.estado}</span></td>
+                            <td class="p-4"><p class="text-slate-300">${eq.asignadoA || '<span class="italic text-slate-600">Nadie</span>'}</p><p class="text-xs text-slate-500"><i data-lucide="map-pin" class="w-3 h-3 inline"></i> ${eq.ubicacion || 'Sin ubicar'}</p></td>
+                            <td class="p-4 text-right space-x-2">${botonesAccion}</td>
+                        </tr>
+                    `;
+                }); lucide.createIcons();
+            } catch (error) { tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-400">Error cargando equipos.</td></tr>'; console.error(error); }
+        }
+
+        window.abrirModal = async function(id, nombre, estado, asignadoA) {
+            document.getElementById('edit-id').value = id; 
+            document.getElementById('edit-nombre').value = nombre;
+            document.getElementById('edit-estado').value = estado; 
+
+            const selectAsignado = document.getElementById('edit-asignado');
+            selectAsignado.innerHTML = '<option value="">Cargando personal...</option>';
+            document.getElementById('modal-editar').classList.remove('hidden');
+
+            try {
+                const snapshot = await window.getDocs(window.collection(window.db, "personal"));
+                let opciones = '<option value="">-- Sin asignar --</option>';
+                snapshot.forEach(doc => {
+                    const emp = doc.data();
+                    const isSelected = (asignadoA === emp.nombre) ? 'selected' : '';
+                    opciones += `<option value="${emp.nombre}" ${isSelected}>${emp.nombre} (${emp.cargo})</option>`;
+                });
+                selectAsignado.innerHTML = opciones;
+            } catch(error) { selectAsignado.innerHTML = '<option value="">Error al cargar la lista</option>'; }
+        }
+        function cerrarModal() { document.getElementById('modal-editar').classList.add('hidden'); }
+
+        document.getElementById('form-editar').addEventListener('submit', async function(e) {
+            e.preventDefault(); const id = document.getElementById('edit-id').value;
+            const btn = document.getElementById('btn-actualizar'); btn.innerText = "Guardando..."; btn.disabled = true;
+            try { 
+                await window.updateDoc(window.doc(window.db, "equipos", id), { 
+                    nombre: document.getElementById('edit-nombre').value, 
+                    estado: document.getElementById('edit-estado').value, 
+                    asignadoA: document.getElementById('edit-asignado').value 
+                }); 
+                cerrarModal(); cargarEquipos(); 
+            } 
+            catch (error) { alert("Error al editar"); }
+            finally { btn.innerText = "Actualizar"; btn.disabled = false; }
+        });
+
+        window.eliminarEquipo = async function(id) {
+            if(confirm("¿Eliminar equipo permanentemente?")) { await window.deleteDoc(window.doc(window.db, "equipos", id)); cargarEquipos(); }
+        }
+
+        // ------------------------------------
+        // LÓGICA PERSONAL
+        // ------------------------------------
+        document.getElementById('form-personal').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol === 'usuario') return;
+
+            const btn = document.getElementById('btn-guardar-pers'); btn.innerHTML = "Guardando..."; btn.disabled = true;
+
+            try {
+                const nuevoEmpleado = {
+                    nombre: document.getElementById('pers-nombre').value, email: document.getElementById('pers-email').value,
+                    contacto: document.getElementById('pers-contacto').value, departamento: document.getElementById('pers-departamento').value,
+                    cargo: document.getElementById('pers-cargo').value, estado: document.getElementById('pers-estado').value,
+                    fechaRegistro: new Date().toISOString()
+                };
+                await window.addDoc(window.collection(window.db, "personal"), nuevoEmpleado);
+                document.getElementById('form-personal').reset(); cargarPersonal();
+            } catch (error) { console.error(error); alert("Error."); } 
+            finally { btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Empleado'; lucide.createIcons(); btn.disabled = false; }
+        });
+
+        async function cargarPersonal() {
+            const tbody = document.getElementById('tbody-personal'); tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4">Cargando personal...</td></tr>';
+            try {
+                const snapshot = await window.getDocs(window.collection(window.db, "personal")); tbody.innerHTML = '';
+                
+                if(snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-500">No hay personal registrado.</td></tr>'; return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const emp = doc.data(); const id = doc.id;
+                    let badgeColor = emp.estado === 'Activo' ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-red-500/10 text-red-400 border-red-500/20";
+                    
+                    const botonesAccion = (usuarioActual.rol === 'admin' || usuarioActual.rol === 'supervisor') ? `
+                        <button onclick="verPerfilEmpleado('${emp.nombre}', '${emp.cargo}', '${emp.departamento}', '${emp.email}')" class="text-blue-400 hover:text-blue-300 p-1.5 bg-blue-400/10 rounded" title="Ver Equipos">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        ${usuarioActual.rol === 'admin' ? `<button onclick="eliminarPersonal('${id}')" class="text-red-400 hover:text-red-300 p-1.5 bg-red-400/10 rounded" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                    ` : '';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/30 transition-colors group">
+                            <td class="p-4"><p class="font-medium text-white">${emp.nombre}</p><p class="text-xs text-slate-500">${emp.email}</p></td>
+                            <td class="p-4"><p class="text-slate-300">${emp.departamento}</p><p class="text-xs text-slate-500">${emp.cargo}</p></td>
+                            <td class="p-4 text-slate-400">${emp.contacto || '-'}</td>
+                            <td class="p-4"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeColor}">${emp.estado}</span></td>
+                            <td class="p-4 text-right space-x-2">${botonesAccion}</td>
+                        </tr>
+                    `;
+                }); lucide.createIcons();
+            } catch (error) { console.error(error); tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-400">Error cargando.</td></tr>'; }
+        }
+
+        // CORRECCIÓN 1: Nueva función para llenar el menú desplegable en el formulario de Personal
+        window.cargarSelectDepartamentos = async function() {
+            const selectDeptos = document.getElementById('pers-departamento');
+            try {
+                const snapshot = await window.getDocs(window.collection(window.db, "departamentos"));
+                let opciones = '<option value="">-- Seleccione un Departamento --</option>';
+                
+                snapshot.forEach(doc => {
+                    const depto = doc.data();
+                    opciones += `<option value="${depto.nombre}">${depto.nombre}</option>`;
+                });
+                
+                if (snapshot.empty) {
+                    opciones = '<option value="">Cree un departamento primero</option>';
+                }
+                
+                selectDeptos.innerHTML = opciones;
+            } catch (error) {
+                console.error("Error al cargar lista de departamentos", error);
+                selectDeptos.innerHTML = '<option value="">Error de conexión</option>';
+            }
+        }
+
+        window.eliminarPersonal = async function(id) {
+            if(confirm("¿Eliminar a este empleado permanentemente?")) { await window.deleteDoc(window.doc(window.db, "personal", id)); cargarPersonal(); }
+        }
+
+        // ------------------------------------
+        // LÓGICA PERFIL Y BÚSQUEDA DE EQUIPOS ASIGNADOS
+        // ------------------------------------
+        window.verPerfilEmpleado = async function(nombre, cargo, departamento, email) {
+            document.getElementById('perfil-nombre').innerText = nombre;
+            document.getElementById('perfil-avatar').innerText = nombre.charAt(0).toUpperCase();
+            document.getElementById('perfil-cargo-depto').innerText = `${cargo} • ${departamento}`;
+            document.getElementById('perfil-email').innerText = email;
+
+            const tbodyEquipos = document.getElementById('tbody-perfil-equipos');
+            tbodyEquipos.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2"></i> Buscando equipos...</td></tr>';
+            lucide.createIcons();
+            
+            document.getElementById('modal-perfil').classList.remove('hidden');
+
+            try {
+                const q = window.query(window.collection(window.db, "equipos"), window.where("asignadoA", "==", nombre));
+                const snapshot = await window.getDocs(q);
+                tbodyEquipos.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbodyEquipos.innerHTML = '<tr><td colspan="4" class="text-center p-6 text-slate-500 italic">Este empleado no tiene equipos asignados.</td></tr>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const eq = doc.data();
+                    let badgeColor = "bg-green-500/10 text-green-400 border-green-500/20";
+                    if(eq.estado === 'En reparación') badgeColor = "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                    if(eq.estado === 'Dañado') badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
+
+                    tbodyEquipos.innerHTML += `
+                        <tr class="hover:bg-slate-900 transition-colors">
+                            <td class="p-3 font-medium text-slate-300"><div class="flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-slate-500"></i> ${eq.codigo || '-'}</div></td>
+                            <td class="p-3"><p class="text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''}</p></td>
+                            <td class="p-3 text-slate-400 font-mono text-xs">${eq.serie || 'N/A'}</td>
+                            <td class="p-3"><span class="inline-flex px-2 py-0.5 rounded text-xs font-medium border ${badgeColor}">${eq.estado}</span></td>
+                        </tr>
+                    `;
+                }); lucide.createIcons();
+            } catch (error) { console.error("Error buscando equipos:", error); tbodyEquipos.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-red-400">Error al buscar información.</td></tr>'; }
+        }
+
+        window.cerrarModalPerfil = function() { document.getElementById('modal-perfil').classList.add('hidden'); }
+
+        // ------------------------------------
+        // LÓGICA DEPARTAMENTOS
+        // ------------------------------------
+        document.getElementById('form-departamento').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol === 'usuario') return;
+
+            const btn = document.getElementById('btn-guardar-dep'); btn.innerHTML = "Guardando..."; btn.disabled = true;
+            try {
+                const nuevoDepto = {
+                    nombre: document.getElementById('dep-nombre').value,
+                    responsable: document.getElementById('dep-responsable').value,
+                    fechaRegistro: new Date().toISOString()
+                };
+                await window.addDoc(window.collection(window.db, "departamentos"), nuevoDepto);
+                document.getElementById('form-departamento').reset(); 
+                cargarDepartamentos();
+            } catch (error) { console.error(error); alert("Error."); } 
+            finally { btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar'; lucide.createIcons(); btn.disabled = false; }
+        });
+
+        async function cargarDepartamentos() {
+            const tbody = document.getElementById('tbody-departamentos'); 
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400"></i></td></tr>';
+            lucide.createIcons();
+
+            try {
+                const [deptosSnap, persSnap, eqSnap] = await Promise.all([
+                    window.getDocs(window.collection(window.db, "departamentos")),
+                    window.getDocs(window.collection(window.db, "personal")),
+                    window.getDocs(window.collection(window.db, "equipos"))
+                ]);
+
+                const conteoPersonal = {}; 
+                const empleadoADepto = {}; 
+                persSnap.forEach(doc => {
+                    const emp = doc.data();
+                    const nombreDepto = emp.departamento || "Sin asignar";
+                    conteoPersonal[nombreDepto] = (conteoPersonal[nombreDepto] || 0) + 1;
+                    empleadoADepto[emp.nombre] = nombreDepto;
+                });
+
+                const conteoEquipos = {};
+                eqSnap.forEach(doc => {
+                    const eq = doc.data();
+                    if (eq.asignadoA) {
+                        const deptoDelEquipo = empleadoADepto[eq.asignadoA];
+                        if (deptoDelEquipo) {
+                            conteoEquipos[deptoDelEquipo] = (conteoEquipos[deptoDelEquipo] || 0) + 1;
+                        }
+                    }
+                });
+
+                tbody.innerHTML = '';
+                if(deptosSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-slate-500">No hay departamentos.</td></tr>'; return;
+                }
+
+                deptosSnap.forEach((doc) => {
+                    const dep = doc.data(); const id = doc.id;
+                    const cantidadPers = conteoPersonal[dep.nombre] || 0;
+                    const cantidadEq = conteoEquipos[dep.nombre] || 0;
+
+                    const botonesAccion = (usuarioActual.rol === 'admin') ? `
+                        <button onclick="abrirModalDepto('${id}', '${dep.nombre}', '${dep.responsable}')" class="text-blue-400 hover:text-blue-300 p-1.5 bg-blue-400/10 rounded"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="eliminarDepto('${id}')" class="text-red-400 hover:text-red-300 p-1.5 bg-red-400/10 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    ` : '';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/30 transition-colors group">
+                            <td class="p-4 font-medium text-white flex items-center gap-2"><i data-lucide="building" class="w-4 h-4 text-slate-500"></i> ${dep.nombre}</td>
+                            <td class="p-4 text-slate-300">${dep.responsable}</td>
+                            <td class="p-4 text-center"><span class="bg-slate-800 text-slate-300 py-1 px-3 rounded-full text-xs font-bold">${cantidadPers}</span></td>
+                            <td class="p-4 text-center"><span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 py-1 px-3 rounded-full text-xs font-bold">${cantidadEq}</span></td>
+                            <td class="p-4 text-right space-x-2">${botonesAccion}</td>
+                        </tr>
+                    `;
+                }); 
+                lucide.createIcons();
+            } catch (error) { console.error(error); tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-400">Error cargando datos.</td></tr>'; }
+        }
+
+        window.abrirModalDepto = function(id, nombre, responsable) {
+            document.getElementById('edit-dep-id').value = id;
+            document.getElementById('edit-dep-nombre').value = nombre;
+            document.getElementById('edit-dep-responsable').value = responsable;
+            document.getElementById('modal-editar-depto').classList.remove('hidden');
+        }
+        
+        window.cerrarModalDepto = function() { document.getElementById('modal-editar-depto').classList.add('hidden'); }
+
+        document.getElementById('form-editar-depto').addEventListener('submit', async function(e) {
+            e.preventDefault(); const id = document.getElementById('edit-dep-id').value;
+            try { 
+                await window.updateDoc(window.doc(window.db, "departamentos", id), { 
+                    nombre: document.getElementById('edit-dep-nombre').value, 
+                    responsable: document.getElementById('edit-dep-responsable').value 
+                }); 
+                cerrarModalDepto(); cargarDepartamentos(); 
+            } catch (error) { alert("Error"); }
+        });
+
+        window.eliminarDepto = async function(id) {
+            if(confirm("¿Eliminar departamento?")) { await window.deleteDoc(window.doc(window.db, "departamentos", id)); cargarDepartamentos(); }
+        }
+
+        // ==========================================
+        // LÓGICA DE SUPERVISORES PARA DEPARTAMENTOS
+        // ==========================================
+        // ==========================================
+        // LÓGICA DE SUPERVISORES PARA DEPARTAMENTOS
+        // ==========================================
+        window.cargarSelectSupervisores = async function() {
+            const selectDep = document.getElementById('dep-responsable');
+            const selectEditDep = document.getElementById('edit-dep-responsable');
+            
+            try {
+                // Obtenemos a todos los usuarios
+                const snapshot = await window.getDocs(window.collection(window.db, "usuarios"));
+                let opciones = '<option value="">-- Seleccionar Encargado --</option>';
+                let haySupervisores = false;
+                
+                snapshot.forEach(doc => {
+                    const u = doc.data();
+                    // CORRECCIÓN: Filtramos SOLO a los que tienen rol 'supervisor'
+                    if (u.rol === 'supervisor') {
+                        opciones += `<option value="${u.email}">${u.email}</option>`;
+                        haySupervisores = true;
+                    }
+                });
+
+                // Mensaje por si aún no has creado supervisores
+                if (!haySupervisores) {
+                    opciones = '<option value="">No hay supervisores registrados</option>';
+                }
+
+                if(selectDep) selectDep.innerHTML = opciones;
+                if(selectEditDep) selectEditDep.innerHTML = opciones;
+            } catch (error) {
+                console.error("Error al cargar supervisores", error);
+            }
+        }
+
+        // ==========================================
+        // MÓDULO DEL TALLER
+        // ==========================================
+        window.cargarTaller = async function() {
+            const tbody = document.getElementById('tbody-taller');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-6 text-slate-400"><i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto mb-2"></i> Cargando taller...</td></tr>';
+            lucide.createIcons();
+
+            try {
+                // Consulta a Firebase: Traer SOLO los equipos cuyo estado sea "En reparación"
+                const q = window.query(window.collection(window.db, "equipos"), window.where("estado", "==", "En reparación"));
+                const snapshot = await window.getDocs(q);
+                
+                tbody.innerHTML = '';
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-6 text-slate-500 italic flex flex-col items-center"><i data-lucide="check-circle" class="w-8 h-8 text-green-500 mb-2"></i> No hay equipos en reparación. ¡Todo está funcionando!</td></tr>';
+                    lucide.createIcons();
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const eq = doc.data(); const id = doc.id;
+                    const fecha = new Date(eq.fechaRegistro).toLocaleDateString();
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="p-4">
+                                <div class="flex items-center gap-2 text-slate-300 font-medium"><i data-lucide="qr-code" class="w-4 h-4 text-slate-500"></i> ${eq.codigo || '-'}</div>
+                                <div class="text-xs font-mono text-slate-500 mt-1">${eq.serie || 'S/N: N/A'}</div>
+                            </td>
+                            <td class="p-4"><p class="text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''}</p></td>
+                            <td class="p-4"><span class="text-slate-300">${eq.asignadoA || '<span class="italic text-slate-600">Nadie</span>'}</span></td>
+                            <td class="p-4 text-slate-400">${fecha}</td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="cambiarEstadoTaller('${id}', 'Disponible')" class="text-green-400 hover:text-green-300 px-3 py-1.5 bg-green-400/10 rounded font-medium text-xs transition-colors" title="Marcar como Reparado">
+                                    <i data-lucide="wrench" class="w-3 h-3 inline mr-1"></i> Reparado
+                                </button>
+                                <button onclick="cambiarEstadoTaller('${id}', 'Dañado')" class="text-red-400 hover:text-red-300 px-3 py-1.5 bg-red-400/10 rounded font-medium text-xs transition-colors" title="Dar de baja">
+                                    <i data-lucide="trash" class="w-3 h-3 inline mr-1"></i> Baja
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                lucide.createIcons();
+            } catch (error) {
+                console.error("Error en Taller:", error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-400">Error al cargar el taller.</td></tr>';
+            }
+        }
+
+        // Función rápida para actualizar el estado desde el taller
+        window.cambiarEstadoTaller = async function(idEquipo, nuevoEstado) {
+            const msj = nuevoEstado === 'Disponible' ? '¿Marcar este equipo como REPARADO y listo para asignar?' : '¿Dar de BAJA este equipo por daño irreparable?';
+            if(confirm(msj)) {
+                try {
+                    await window.updateDoc(window.doc(window.db, "equipos", idEquipo), { estado: nuevoEstado });
+                    cargarTaller(); // Recargamos el taller para que el equipo desaparezca de esta vista
+                } catch(error) {
+                    console.error("Error cambiando estado:", error);
+                    alert("Ocurrió un error al actualizar el estado.");
+                }
+            }
+        }
+
+        // ==========================================
+        // MÓDULO DE DASHBOARD (ESTADÍSTICAS)
+        // ==========================================
+        window.cargarDashboard = async function() {
+            try {
+                // Obtenemos los datos de Equipos y Personal al mismo tiempo
+                const [eqSnap, persSnap] = await Promise.all([
+                    window.getDocs(window.collection(window.db, "equipos")),
+                    window.getDocs(window.collection(window.db, "personal"))
+                ]);
+
+                let total = 0, asignados = 0, disponibles = 0, enReparacion = 0, danados = 0;
+                let alertasHTML = '';
+                const conteoDeptos = {};
+
+                // Mapeamos a qué departamento pertenece cada empleado
+                const empleadoADepto = {};
+                persSnap.forEach(doc => {
+                    const emp = doc.data();
+                    empleadoADepto[emp.nombre] = emp.departamento || 'Sin asignar';
+                });
+
+                // Analizamos cada equipo
+                eqSnap.forEach(doc => {
+                    const eq = doc.data();
+                    total++;
+
+                    // Conteo KPI Superior
+                    if (eq.estado === 'Asignado') asignados++;
+                    else if (eq.estado === 'Disponible') disponibles++;
+                    else if (eq.estado === 'En reparación') enReparacion++;
+                    else if (eq.estado === 'Dañado') danados++;
+
+                    // Generar Alertas
+                    if (eq.estado === 'En reparación') {
+                        alertasHTML += `
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                                <i data-lucide="wrench" class="w-5 h-5 text-red-400 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-white">${eq.nombre} (${eq.codigo || 'S/N'})</p>
+                                    <p class="text-xs text-slate-400">Este equipo está actualmente en el taller.</p>
+                                </div>
+                            </div>
+                        `;
+                    } else if (eq.estado === 'Disponible' && (!eq.asignadoA || eq.asignadoA === '')) {
+                        alertasHTML += `
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                                <i data-lucide="package" class="w-5 h-5 text-purple-400 mt-0.5 shrink-0"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-white">${eq.nombre} (${eq.codigo || 'S/N'})</p>
+                                    <p class="text-xs text-slate-400">Equipo en inventario listo para ser asignado.</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    // Conteo para Departamentos
+                    if (eq.asignadoA && empleadoADepto[eq.asignadoA]) {
+                        const depto = empleadoADepto[eq.asignadoA];
+                        conteoDeptos[depto] = (conteoDeptos[depto] || 0) + 1;
+                    }
+                });
+
+                // 1. Actualizar Tarjetas KPI
+                document.getElementById('dash-total').innerText = total;
+                document.getElementById('dash-asignados').innerText = asignados;
+                document.getElementById('dash-disponibles').innerText = disponibles;
+                document.getElementById('dash-reparacion').innerText = enReparacion;
+
+                // 2. Actualizar Panel de Alertas
+                if (alertasHTML === '') {
+                    alertasHTML = '<div class="text-center py-10"><i data-lucide="check-circle" class="w-10 h-10 text-green-500 mx-auto mb-3"></i><p class="text-slate-400 text-sm">¡Todo está al día! No hay alertas.</p></div>';
+                }
+                document.getElementById('dash-alertas').innerHTML = alertasHTML;
+
+                // 3. Actualizar Panel de Departamentos (Barras de Progreso)
+                let deptosHTML = '';
+                const deptosArray = Object.entries(conteoDeptos).sort((a, b) => b[1] - a[1]); // Ordenar de mayor a menor
+                
+                if (deptosArray.length === 0) {
+                    deptosHTML = '<p class="text-center text-slate-500 text-sm mt-10">No hay equipos asignados a departamentos aún.</p>';
+                } else {
+                    deptosArray.forEach(([depto, cantidad]) => {
+                        const porcentaje = Math.round((cantidad / total) * 100);
+                        deptosHTML += `
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-white font-medium">${depto}</span>
+                                    <span class="text-slate-400">${cantidad} eq. (${porcentaje}%)</span>
+                                </div>
+                                <div class="w-full bg-slate-800 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: ${porcentaje}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('dash-deptos').innerHTML = deptosHTML;
+                
+                lucide.createIcons(); // Recargar iconos inyectados
+
+            } catch (error) {
+                console.error("Error al cargar el Dashboard:", error);
+            }
+        }
+        
+        // ==========================================
+        // MÓDULO DE REPORTES Y EXPORTACIÓN
+        // ==========================================
+        let datosReporteActual = []; // Variable global temporal para guardar los datos filtrados y exportarlos
+
+        window.cargarFiltrosReportes = async function() {
+            const selectDepto = document.getElementById('rep-filtro-depto');
+            try {
+                const snap = await window.getDocs(window.collection(window.db, "departamentos"));
+                let opciones = '<option value="">Todos los Departamentos</option>';
+                snap.forEach(doc => { opciones += `<option value="${doc.data().nombre}">${doc.data().nombre}</option>`; });
+                selectDepto.innerHTML = opciones;
+            } catch(error) { console.error("Error cargando filtros", error); }
+        }
+
+        window.generarReporte = async function() {
+            const estadoFiltro = document.getElementById('rep-filtro-estado').value;
+            const tipoFiltro = document.getElementById('rep-filtro-tipo').value;
+            const deptoFiltro = document.getElementById('rep-filtro-depto').value;
+
+            const tbody = document.getElementById('tbody-reportes');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-blue-500"></i><p class="text-slate-400">Procesando datos...</p></td></tr>';
+            lucide.createIcons();
+
+            try {
+                // Descargamos equipos y personal para hacer el cruce de departamentos
+                const [eqSnap, persSnap] = await Promise.all([
+                    window.getDocs(window.collection(window.db, "equipos")),
+                    window.getDocs(window.collection(window.db, "personal"))
+                ]);
+
+                // Diccionario: Saber en qué departamento está cada empleado
+                const empleadoADepto = {};
+                persSnap.forEach(doc => {
+                    const emp = doc.data();
+                    empleadoADepto[emp.nombre] = emp.departamento || 'Sin asignar';
+                });
+
+                let resultados = [];
+                eqSnap.forEach(doc => {
+                    const eq = doc.data();
+                    // Cruzamos los datos
+                    eq.deptoAsignado = eq.asignadoA ? (empleadoADepto[eq.asignadoA] || 'Desconocido') : 'No asignado';
+                    
+                    // LÓGICA DE FILTRADO
+                    let pasaFiltro = true;
+                    if(estadoFiltro !== "" && eq.estado !== estadoFiltro) pasaFiltro = false;
+                    if(tipoFiltro !== "" && eq.tipo !== tipoFiltro) pasaFiltro = false;
+                    if(deptoFiltro !== "" && eq.deptoAsignado !== deptoFiltro) pasaFiltro = false;
+
+                    if(pasaFiltro) resultados.push(eq);
+                });
+
+                datosReporteActual = resultados; // Guardamos en memoria para poder descargar el CSV luego
+                
+                // Dibujamos la tabla
+                tbody.innerHTML = '';
+                if(resultados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500 font-medium">No se encontraron equipos con estos filtros.</td></tr>';
+                } else {
+                    resultados.forEach(eq => {
+                        let colorEstado = eq.estado === 'Asignado' ? 'text-green-400' : eq.estado === 'En reparación' ? 'text-yellow-400' : eq.estado === 'Dañado' ? 'text-red-400' : 'text-purple-400';
+                        
+                        tbody.innerHTML += `
+                            <tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors">
+                                <td class="p-3">
+                                    <div class="font-medium text-slate-300">${eq.codigo || '-'}</div>
+                                    <div class="text-xs font-mono text-slate-500 mt-0.5">${eq.serie || 'S/N: N/A'}</div>
+                                </td>
+                                <td class="p-3"><p class="text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''}</p></td>
+                                <td class="p-3 text-slate-300">${eq.tipo}</td>
+                                <td class="p-3 font-medium ${colorEstado}">${eq.estado}</td>
+                                <td class="p-3">
+                                    <p class="text-slate-300">${eq.asignadoA || '<span class="italic text-slate-600">Nadie</span>'}</p>
+                                    <p class="text-xs text-slate-500">${eq.deptoAsignado}</p>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                document.getElementById('rep-resumen').innerText = `${resultados.length} equipos encontrados`;
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-400">Error al generar el reporte.</td></tr>';
+            }
+        }
+
+        window.exportarCSV = function() {
+            if(datosReporteActual.length === 0) return alert("No hay datos para exportar.");
+            
+            // Creamos la cabecera del Excel (CSV)
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Código,Nombre,Marca,Modelo,Tipo,Estado,Asignado A,Departamento,Ubicación Física,Fecha Registro\n";
+
+            // Llenamos las filas
+            datosReporteActual.forEach(eq => {
+                const row = [
+                    eq.codigo || '',
+                    `"${eq.nombre || ''}"`, // Comillas por si el nombre tiene comas adentro
+                    `"${eq.marca || ''}"`,
+                    `"${eq.modelo || ''}"`,
+                    eq.tipo || '',
+                    eq.estado || '',
+                    `"${eq.asignadoA || ''}"`,
+                    `"${eq.deptoAsignado || ''}"`,
+                    `"${eq.ubicacion || ''}"`,
+                    new Date(eq.fechaRegistro).toLocaleDateString()
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            // Disparamos la descarga
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Inventario_Reporte_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        window.imprimirReporte = function() {
+            window.print(); // Llama al menú de impresión del navegador
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJFvU_79q8BiOrsV3WqqzQk1Xru6nozJ8",
+            authDomain: "lorhels-stockstaff.firebaseapp.com",
+            projectId: "lorhels-stockstaff",
+            storageBucket: "lorhels-stockstaff.firebasestorage.app",
+            messagingSenderId: "259287416427",
+            appId: "1:259287416427:web:8fb74ec2cdec82a562fb2e"
+        };
+
+        const app = initializeApp(firebaseConfig); 
+        const db = getFirestore(app); 
+        const auth = getAuth(app);
+
+        window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; 
+        window.doc = doc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; 
+        window.getDoc = getDoc; window.setDoc = setDoc; window.query = query; window.where = where;
+        window.auth = auth; window.signInWithEmailAndPassword = signInWithEmailAndPassword; window.signOut = signOut;
+
+        onAuthStateChanged(auth, (user) => { if (user) window.manejarUsuarioLogueado(user); else window.manejarUsuarioDeslogueado(); });
+    </script>
+</body>
+</html>
