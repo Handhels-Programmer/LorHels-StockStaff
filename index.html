@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="do">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LorHels StockStaff</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         tailwind.config = {
             theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], } } }
@@ -630,6 +631,64 @@
                 </div>
             </div>
 
+            <div id="modal-qr" class="hidden fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col items-center p-8 relative text-slate-900">
+                    <button onclick="cerrarModalQR()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    
+                    <h3 class="text-xl font-bold text-center mb-1 text-blue-600">StockStaff</h3>
+                    <p id="qr-equipo-nombre" class="text-sm font-medium text-center text-slate-600 mb-6">Cargando...</p>
+                    
+                    <div id="contenedor-qr" class="bg-white p-4 rounded-xl shadow-inner border-2 border-slate-100 mb-6 flex justify-center items-center min-h-[200px] min-w-[200px]"></div>
+                    
+                    <p id="qr-equipo-codigo" class="text-lg font-mono font-bold tracking-widest text-slate-800 mb-4">HS-000</p>
+                    
+                    <div class="flex gap-3 w-full">
+                        <button onclick="imprimirQR()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Etiqueta
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-publico-qr" class="fixed inset-0 z-[200] bg-slate-950 hidden flex-col items-center justify-center p-4 overflow-y-auto">
+                <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-black relative">
+                    <button onclick="cerrarVistaPublica()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="bg-blue-600/20 p-4 rounded-full text-blue-400 border-4 border-blue-500/20">
+                            <i data-lucide="monitor-smartphone" class="w-12 h-12"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-8 border-b border-slate-800 pb-6">
+                        <span id="pub-estado" class="inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border bg-green-500/10 text-green-400 border-green-500/20">Cargando...</span>
+                        <h2 id="pub-nombre" class="text-2xl font-bold text-white mb-1">Cargando equipo...</h2>
+                        <p id="pub-codigo" class="text-slate-400 font-mono tracking-wider">...</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Asignado a</p>
+                            <p id="pub-asignado" class="text-slate-200 font-medium flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ...</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Marca / Modelo</p>
+                                <p id="pub-marca" class="text-slate-200 font-medium truncate">...</p>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Tipo</p>
+                                <p id="pub-tipo" class="text-slate-200 font-medium truncate">...</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Número de Serie</p>
+                            <p id="pub-serie" class="text-slate-200 font-mono text-sm tracking-wider">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -850,7 +909,11 @@
                     if(eq.estado === 'En reparación') badgeColor = "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
                     if(eq.estado === 'Dañado') badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
 
+                    // ACTUALIZACIÓN: Agregamos el botón del código QR
                     const botonesAccion = (usuarioActual.rol === 'admin' || usuarioActual.rol === 'supervisor') ? `
+                        <button onclick="generarYMostrarQR('${id}', '${eq.nombre}', '${eq.codigo}')" class="text-purple-400 hover:text-purple-300 p-1.5 bg-purple-400/10 rounded" title="Generar Etiqueta QR">
+                            <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        </button>
                         <button onclick="abrirModal('${id}', '${eq.nombre}', '${eq.estado}', '${eq.asignadoA}')" class="text-blue-400 hover:text-blue-300 p-1.5 bg-blue-400/10 rounded" title="Editar">
                             <i data-lucide="edit" class="w-4 h-4"></i>
                         </button>
@@ -859,7 +922,7 @@
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-800/30 transition-colors group">
-                            <td class="p-4"><div class="flex items-center gap-2"><i data-lucide="qr-code" class="w-4 h-4 text-slate-500"></i><span class="font-medium text-slate-300">${eq.codigo || 'N/A'}</span></div></td>
+                            <td class="p-4"><div class="flex items-center gap-2"><i data-lucide="hash" class="w-4 h-4 text-slate-500"></i><span class="font-medium text-slate-300">${eq.codigo || 'N/A'}</span></div></td>
                             <td class="p-4"><p class="font-medium text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''} • S/N: ${eq.serie || 'N/A'}</p></td>
                             <td class="p-4"><span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${badgeColor}">${eq.estado}</span></td>
                             <td class="p-4"><p class="text-slate-300">${eq.asignadoA || '<span class="italic text-slate-600">Nadie</span>'}</p><p class="text-xs text-slate-500"><i data-lucide="map-pin" class="w-3 h-3 inline"></i> ${eq.ubicacion || 'Sin ubicar'}</p></td>
@@ -1478,6 +1541,125 @@
         window.imprimirReporte = function() {
             window.print(); // Llama al menú de impresión del navegador
         }
+
+        // ==========================================
+        // MÓDULO DE CÓDIGOS QR Y VISTA PÚBLICA
+        // ==========================================
+        let qrCodeActual = null; // Variable para guardar el QR y no duplicarlo
+
+        window.generarYMostrarQR = function(equipoId, nombreEquipo, codigoInterno) {
+            // 1. Construimos la URL mágica. 
+            // Esta URL incluye el ID secreto del equipo en la dirección web.
+            const urlActual = window.location.href.split('?')[0]; // Obtiene tu URL actual limpia
+            const urlDelEquipo = `${urlActual}?ver_equipo=${equipoId}`;
+
+            // 2. Preparamos el Modal
+            document.getElementById('qr-equipo-nombre').innerText = nombreEquipo;
+            document.getElementById('qr-equipo-codigo').innerText = codigoInterno || 'S/N';
+            
+            const contenedorQR = document.getElementById('contenedor-qr');
+            contenedorQR.innerHTML = ''; // Limpiamos el anterior
+
+            // 3. Generamos la imagen del QR
+            qrCodeActual = new QRCode(contenedorQR, {
+                text: urlDelEquipo,
+                width: 200,
+                height: 200,
+                colorDark : "#0f172a", // Slate-900
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // 4. Mostramos el Modal
+            document.getElementById('modal-qr').classList.remove('hidden');
+        }
+
+        window.cerrarModalQR = function() {
+            document.getElementById('modal-qr').classList.add('hidden');
+        }
+
+        window.imprimirQR = function() {
+            // Ocultamos todo excepto el QR para imprimir una etiqueta limpia
+            const modalQR = document.getElementById('modal-qr');
+            const contenidoOriginal = document.body.innerHTML;
+            
+            // Truco rápido de impresión
+            document.body.innerHTML = modalQR.outerHTML;
+            document.getElementById('modal-qr').classList.remove('hidden', 'fixed', 'inset-0', 'bg-black/80');
+            window.print();
+            
+            // Restauramos la página normal
+            document.body.innerHTML = contenidoOriginal;
+            lucide.createIcons(); // Recargamos los iconos
+            window.location.reload(); // Recargamos para evitar fallos visuales post-impresión
+        }
+
+        // ==========================================
+        // DETECCIÓN DE ESCANEO (LECTOR DE URL)
+        // ==========================================
+        // Si alguien entra a la página y la URL dice "?ver_equipo=ID_SECRETO", no le pedimos contraseña, le mostramos el equipo.
+        async function comprobarSiVienePorEscaneoQR() {
+            const parametrosURL = new URLSearchParams(window.location.search);
+            const idEquipoEscaneado = parametrosURL.get('ver_equipo');
+
+            if (idEquipoEscaneado) {
+                // Ocultamos la pantalla de Login inmediatamente
+                document.getElementById('view-login').classList.add('hidden');
+                
+                // Mostramos la vista pública
+                const vistaPublica = document.getElementById('view-publico-qr');
+                vistaPublica.classList.remove('hidden');
+                vistaPublica.classList.add('flex');
+
+                try {
+                    // Esperamos un milisegundo a que Firebase despierte y traemos los datos de ese equipo específico
+                    setTimeout(async () => {
+                        const equipoRef = window.doc(window.db, "equipos", idEquipoEscaneado);
+                        const docSnap = await window.getDoc(equipoRef);
+
+                        if (docSnap.exists()) {
+                            const eq = docSnap.data();
+                            
+                            document.getElementById('pub-nombre').innerText = eq.nombre;
+                            document.getElementById('pub-codigo').innerText = eq.codigo || 'Sin código interno';
+                            document.getElementById('pub-asignado').innerHTML = `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${eq.asignadoA || '<span class="italic text-slate-600">No asignado</span>'}`;
+                            document.getElementById('pub-marca').innerText = `${eq.marca} ${eq.modelo || ''}`;
+                            document.getElementById('pub-tipo').innerText = eq.tipo;
+                            document.getElementById('pub-serie').innerText = eq.serie || 'N/A';
+
+                            // Estilos del estado
+                            const badge = document.getElementById('pub-estado');
+                            badge.innerText = eq.estado;
+                            badge.className = "inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ";
+                            
+                            if(eq.estado === 'Disponible') badge.className += "bg-purple-500/10 text-purple-400 border-purple-500/20";
+                            else if(eq.estado === 'Asignado') badge.className += "bg-green-500/10 text-green-400 border-green-500/20";
+                            else if(eq.estado === 'En reparación') badge.className += "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                            else badge.className += "bg-red-500/10 text-red-400 border-red-500/20";
+
+                            lucide.createIcons();
+                        } else {
+                            document.getElementById('pub-nombre').innerText = "Equipo no encontrado";
+                            document.getElementById('pub-codigo').innerText = "El código escaneado no es válido o el equipo fue eliminado.";
+                            document.getElementById('pub-estado').style.display = 'none';
+                        }
+                    }, 500); // Pequeño retraso para asegurar que db está listo
+                } catch (error) {
+                    console.error("Error leyendo QR:", error);
+                    document.getElementById('pub-nombre').innerText = "Error de conexión";
+                }
+            }
+        }
+
+        window.cerrarVistaPublica = function() {
+            // Quitamos el parámetro de la URL y recargamos para ir al Login normal
+            window.history.replaceState({}, document.title, window.location.pathname);
+            window.location.reload();
+        }
+
+        // Ejecutar la comprobación tan pronto cargue la página
+        window.onload = comprobarSiVienePorEscaneoQR;
+        
     </script>
 
     <script type="module">
