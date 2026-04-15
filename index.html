@@ -1,192 +1,165 @@
 <!DOCTYPE html>
 <html lang="do">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LorHels StockStaff</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], } } }
-        }
-    </script>
-
-    <style>
-        /* Ocultar elementos de navegación al imprimir */
-        @media print {
-            #sidebar, header, #panel-filtros-reporte { display: none !important; }
-            #app-container, main, .flex-1 { height: auto !important; overflow: visible !important; }
-            body { background-color: white !important; color: black !important; }
-            .bg-slate-900 { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important;}
-            .text-white, .text-slate-300, .text-slate-400 { color: black !important; }
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
-    </style>
-
-</head>
-<body class="bg-slate-950 text-slate-200 font-sans flex overflow-hidden min-h-screen">
-
-    <div id="view-login" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-black">
-            <div class="flex justify-center mb-6">
-                <div class="bg-blue-600 p-3 rounded-xl text-white shadow-lg shadow-blue-600/20">
-                    <i data-lucide="monitor-smartphone" class="w-10 h-10"></i>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LorHels StockStaff</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+        <script>tailwind.config = {theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'], } } }}</script>
+        <style>
+            @media print {
+                #sidebar, header, #panel-filtros-reporte { display: none !important; }
+                #app-container, main, .flex-1 { height: auto !important; overflow: visible !important; }
+                body { background-color: white !important; color: black !important; }
+                .bg-slate-900 { background-color: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important;}
+                .text-white, .text-slate-300, .text-slate-400 { color: black !important; }
+                * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+        </style>
+    </head>
+    <body class="bg-slate-950 text-slate-200 font-sans flex overflow-hidden min-h-screen">
+        <div id="view-login" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center p-4">
+            <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-black">
+                <div class="flex justify-center mb-6">
+                    <div class="bg-blue-600 p-3 rounded-xl text-white shadow-lg shadow-blue-600/20">
+                        <i data-lucide="monitor-smartphone" class="w-10 h-10"></i>
+                    </div>
                 </div>
+                <h2 class="text-2xl font-bold text-center text-white mb-2">Bienvenido a LorHels StockStaff</h2>
+                <p class="text-slate-400 text-center text-sm mb-8">Ingresa tus credenciales para continuar</p>
+                <form id="form-login" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
+                        <div class="relative">
+                            <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                            <input type="email" id="login-email" required placeholder="tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
+                        <div class="relative">
+                            <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
+                        </div>
+                    </div>
+                    <p id="login-error" class="text-red-400 text-xs hidden text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20"></p>
+                    <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2 flex justify-center items-center gap-2">
+                        Ingresar <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </form>
             </div>
-            <h2 class="text-2xl font-bold text-center text-white mb-2">Bienvenido a LorHels StockStaff</h2>
-            <p class="text-slate-400 text-center text-sm mb-8">Ingresa tus credenciales para continuar</p>
-
-            <form id="form-login" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
-                    <div class="relative">
-                        <i data-lucide="mail" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
-                        <input type="email" id="login-email" required placeholder="tu@correo.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
-                    <div class="relative">
-                        <i data-lucide="lock" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
-                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors">
-                    </div>
-                </div>
-                <p id="login-error" class="text-red-400 text-xs hidden text-center bg-red-400/10 py-2 rounded-lg border border-red-400/20"></p>
-                <button type="submit" id="btn-login" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2.5 rounded-lg transition-colors mt-2 flex justify-center items-center gap-2">
-                    Ingresar <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
-            </form>
         </div>
-    </div>
-
-    <div id="app-container" class="hidden w-full flex overflow-hidden min-h-screen">
-        
-        <div id="mobile-overlay" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden cursor-pointer" onclick="toggleSidebar()"></div>
-
-        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transform transition-transform duration-300 ease-in-out flex flex-col -translate-x-full md:translate-x-0">
-            <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800">
-                <div class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
-                    <div class="bg-blue-600 p-1.5 rounded-lg text-white"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
-                    <span class="font-bold text-lg text-white transition-opacity duration-300">LorHels StockStaff</span>
-                </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" id="nav-menu">
-                <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative bg-blue-600/10 text-blue-400" data-active="true">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-400"></i><span class="font-medium text-sm">Dashboard</span>
-                    <div class="active-indicator absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-                <button onclick="switchTab('equipos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="monitor-smartphone" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Equipos</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-                <button onclick="switchTab('personal', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="users" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Personal</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-                
-                <button id="nav-accesos" onclick="switchTab('accesos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="shield" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Accesos</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-
-                <button onclick="switchTab('departamentos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="building-2" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Departamentos</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-
-                <button onclick="switchTab('taller', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="wrench" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Taller</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-
-                <button id="nav-reportes" onclick="switchTab('reportes', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
-                    <i data-lucide="file-bar-chart" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Reportes</span>
-                    <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
-                </button>
-            </nav>
-
-            <div class="p-4 border-t border-slate-800">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-blue-900 border-2 border-blue-500 flex items-center justify-center text-blue-300 font-bold shrink-0" id="user-avatar-letter">U</div>
-                        <div class="overflow-hidden transition-opacity duration-300">
-                            <p id="sidebar-user-email" class="text-sm font-medium text-white truncate w-32">Cargando...</p>
-                            <p id="sidebar-user-role" class="text-xs text-blue-400 uppercase tracking-wider font-semibold">ROL</p>
-                        </div>
+        <div id="app-container" class="hidden w-full flex overflow-hidden min-h-screen">
+            <div id="mobile-overlay" class="hidden fixed inset-0 bg-black/50 z-40 md:hidden cursor-pointer" onclick="toggleSidebar()"></div>
+            <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transform transition-transform duration-300 ease-in-out flex flex-col -translate-x-full md:translate-x-0">
+                <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+                    <div class="flex items-center gap-3 overflow-hidden whitespace-nowrap">
+                        <div class="bg-blue-600 p-1.5 rounded-lg text-white"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
+                        <span class="font-bold text-lg text-white transition-opacity duration-300">LorHels StockStaff</span>
                     </div>
-                    <button onclick="cerrarSesion()" class="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-slate-800"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
-            </div>
-        </aside>
-
-        <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <header class="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-8">
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                </div>
-            </header>
-
-            <div class="flex-1 overflow-y-auto p-4 lg:p-8">
-                <div class="mb-8">
-                    <h1 id="page-title" class="text-2xl font-bold text-white capitalize">Dashboard</h1>
-                    <p id="page-subtitle" class="text-slate-400 text-sm mt-1">Resumen general.</p>
-                </div>
-
-                <div id="view-dashboard" class="view-section block space-y-6">
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
-                            <div class="p-3 rounded-lg bg-blue-400/10 text-blue-400"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
-                            <div><p class="text-slate-400 text-sm font-medium">Total Equipos</p><h3 id="dash-total" class="text-2xl font-bold text-white">0</h3></div>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
-                            <div class="p-3 rounded-lg bg-green-400/10 text-green-400"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
-                            <div><p class="text-slate-400 text-sm font-medium">Asignados</p><h3 id="dash-asignados" class="text-2xl font-bold text-white">0</h3></div>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
-                            <div class="p-3 rounded-lg bg-purple-400/10 text-purple-400"><i data-lucide="package" class="w-6 h-6"></i></div>
-                            <div><p class="text-slate-400 text-sm font-medium">Disponibles</p><h3 id="dash-disponibles" class="text-2xl font-bold text-white">0</h3></div>
-                        </div>
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
-                            <div class="p-3 rounded-lg bg-red-400/10 text-red-400"><i data-lucide="wrench" class="w-6 h-6"></i></div>
-                            <div><p class="text-slate-400 text-sm font-medium">En Reparación</p><h3 id="dash-reparacion" class="text-2xl font-bold text-white">0</h3></div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
-                            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-                                <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="bell-ring" class="w-5 h-5 text-yellow-400"></i> Alertas de Equipos</h2>
-                                <button onclick="cargarDashboard()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
-                            </div>
-                            <div class="p-5 flex-1 overflow-y-auto space-y-3" id="dash-alertas">
-                                <p class="text-center text-slate-500 text-sm mt-10">Cargando alertas...</p>
+                <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto" id="nav-menu">
+                    <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative bg-blue-600/10 text-blue-400" data-active="true">
+                        <i data-lucide="layout-dashboard" class="w-5 h-5 text-blue-400"></i><span class="font-medium text-sm">Dashboard</span>
+                        <div class="active-indicator absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button onclick="switchTab('equipos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="monitor-smartphone" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Equipos</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button onclick="switchTab('personal', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="users" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Personal</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button id="nav-accesos" onclick="switchTab('accesos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="shield" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Accesos</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button onclick="switchTab('departamentos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="building-2" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Departamentos</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button onclick="switchTab('taller', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="wrench" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Taller</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                    <button id="nav-reportes" onclick="switchTab('reportes', this)" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group relative text-slate-400 hover:bg-slate-800/50 hover:text-slate-200">
+                        <i data-lucide="file-bar-chart" class="w-5 h-5 group-hover:text-slate-300"></i><span class="font-medium text-sm">Reportes</span>
+                        <div class="active-indicator hidden absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-500 rounded-r-full"></div>
+                    </button>
+                </nav>
+                <div class="p-4 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-blue-900 border-2 border-blue-500 flex items-center justify-center text-blue-300 font-bold shrink-0" id="user-avatar-letter">U</div>
+                            <div class="overflow-hidden transition-opacity duration-300">
+                                <p id="sidebar-user-email" class="text-sm font-medium text-white truncate w-32">Cargando...</p>
+                                <p id="sidebar-user-role" class="text-xs text-blue-400 uppercase tracking-wider font-semibold">ROL</p>
                             </div>
                         </div>
-
-                        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
-                            <div class="p-5 border-b border-slate-800 flex justify-between items-center">
-                                <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="building" class="w-5 h-5 text-blue-400"></i> Distribución de Equipos</h2>
-                            </div>
-                            <div class="p-5 flex-1 overflow-y-auto space-y-4" id="dash-deptos">
-                                <p class="text-center text-slate-500 text-sm mt-10">Calculando distribución...</p>
-                            </div>
-                        </div>
-
+                        <button onclick="cerrarSesion()" class="text-slate-500 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-slate-800"><i data-lucide="log-out" class="w-5 h-5"></i></button>
                     </div>
                 </div>
-
+            </aside>
+            <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+                <header class="h-16 bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-4 lg:px-8">
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                    </div>
+                </header>
+                <div class="flex-1 overflow-y-auto p-4 lg:p-8">
+                    <div class="mb-8">
+                        <h1 id="page-title" class="text-2xl font-bold text-white capitalize">Dashboard</h1>
+                        <p id="page-subtitle" class="text-slate-400 text-sm mt-1">Resumen general.</p>
+                    </div>
+                    <div id="view-dashboard" class="view-section block space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                                <div class="p-3 rounded-lg bg-blue-400/10 text-blue-400"><i data-lucide="monitor-smartphone" class="w-6 h-6"></i></div>
+                                <div><p class="text-slate-400 text-sm font-medium">Total Equipos</p><h3 id="dash-total" class="text-2xl font-bold text-white">0</h3></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                                <div class="p-3 rounded-lg bg-green-400/10 text-green-400"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
+                                <div><p class="text-slate-400 text-sm font-medium">Asignados</p><h3 id="dash-asignados" class="text-2xl font-bold text-white">0</h3></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                                <div class="p-3 rounded-lg bg-purple-400/10 text-purple-400"><i data-lucide="package" class="w-6 h-6"></i></div>
+                                <div><p class="text-slate-400 text-sm font-medium">Disponibles</p><h3 id="dash-disponibles" class="text-2xl font-bold text-white">0</h3></div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-4 shadow-lg shadow-black/20">
+                                <div class="p-3 rounded-lg bg-red-400/10 text-red-400"><i data-lucide="wrench" class="w-6 h-6"></i></div>
+                                <div><p class="text-slate-400 text-sm font-medium">En Reparación</p><h3 id="dash-reparacion" class="text-2xl font-bold text-white">0</h3></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
+                                <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                                    <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="bell-ring" class="w-5 h-5 text-yellow-400"></i> Alertas de Equipos</h2>
+                                    <button onclick="cargarDashboard()" class="text-slate-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                                </div>
+                                <div class="p-5 flex-1 overflow-y-auto space-y-3" id="dash-alertas">
+                                    <p class="text-center text-slate-500 text-sm mt-10">Cargando alertas...</p>
+                                </div>
+                            </div>
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20 flex flex-col h-96">
+                                <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                                    <h2 class="text-lg font-semibold text-white flex items-center gap-2"><i data-lucide="building" class="w-5 h-5 text-blue-400"></i> Distribución de Equipos</h2>
+                                </div>
+                                <div class="p-5 flex-1 overflow-y-auto space-y-4" id="dash-deptos">
+                                    <p class="text-center text-slate-500 text-sm mt-10">Calculando distribución...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 <div id="view-placeholder" class="view-section hidden">
                     <div class="h-64 border-2 border-dashed border-slate-800 rounded-xl flex items-center justify-center text-slate-500 flex-col gap-4">
                         <i data-lucide="hammer" class="w-8 h-8 text-slate-600"></i><p id="placeholder-text">En construcción...</p>
                     </div>
                 </div>
-
                 <div id="view-equipos" class="view-section hidden space-y-6">
                     <div id="panel-registro-equipos" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
                         <h2 class="text-lg font-semibold text-white mb-4">Registrar Nuevo Equipo</h2>
@@ -258,11 +231,17 @@
                             </div>
                         </form>
                     </div>
-
                     <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg shadow-black/20">
-                        <div class="p-5 border-b border-slate-800 flex justify-between items-center">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center flex-wrap gap-4">
                             <h2 class="text-lg font-semibold text-white">Inventario de Equipos</h2>
-                            <button onclick="cargarEquipos()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            <div class="flex items-center gap-2">
+                                <input type="file" id="input-importar-excel" accept=".xlsx, .xls" class="hidden" onchange="procesarImportacionExcel(event)">
+                                
+                                <button onclick="activarImportacionExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <i data-lucide="upload-cloud" class="w-4 h-4"></i> Importar Masivo
+                                </button>
+                                <button onclick="cargarEquipos()" class="text-slate-400 hover:text-white p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[800px]">
@@ -280,7 +259,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="view-personal" class="view-section hidden space-y-6">
                     <div id="panel-registro-personal" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
                         <div class="flex items-center gap-3 mb-4 border-b border-slate-800 pb-4">
@@ -405,7 +383,16 @@
                 </div>
 
                 <div id="view-reportes" class="view-section hidden space-y-6">
-                    
+                    <div id="encabezado-impresion" class="hidden print:flex flex-col items-center justify-center mb-6 pb-4 border-b-2 border-slate-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="text-blue-600">
+                                <i data-lucide="monitor-smartphone" class="w-10 h-10"></i>
+                            </div>
+                            <h1 class="text-3xl font-bold" style="color: black !important;">LorHels StockStaff</h1>
+                        </div>
+                        <h2 class="text-xl font-semibold" style="color: #333 !important;">Reporte Oficial de Inventario</h2>
+                        <p id="print-fecha-filtros" class="text-sm mt-1" style="color: #666 !important;"></p>
+                    </div>
                     <div id="panel-filtros-reporte" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg shadow-black/20">
                         <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                             <i data-lucide="file-bar-chart" class="w-5 h-5 text-blue-400"></i> Generador de Reportes
@@ -446,8 +433,8 @@
                             <button onclick="generarReporte()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                                 <i data-lucide="search" class="w-4 h-4"></i> Generar
                             </button>
-                            <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                <i data-lucide="download" class="w-4 h-4"></i> Excel (CSV)
+                            <button onclick="exportarReporteExcel()" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Exportar a XLSX
                             </button>
                             <button onclick="imprimirReporte()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                                 <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
@@ -532,9 +519,9 @@
                     </div>
                 </div>
 
-            </div>
+                </div>
             
-            <div id="modal-editar" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div id="modal-editar" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
                 <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
                     <div class="p-5 border-b border-slate-800 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-white">Editar / Asignar Equipo</h3>
@@ -565,9 +552,9 @@
                         </div>
                     </form>
                 </div>
-            </div>
+                </div>
 
-            <div id="modal-perfil" class="hidden fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div id="modal-perfil" class="hidden fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
                 <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]">
                     <div class="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-800/50 rounded-t-2xl">
                         <div class="flex items-center gap-4">
@@ -600,9 +587,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
 
-            <div id="modal-editar-depto" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div id="modal-editar-depto" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
                 <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl">
                     <div class="p-5 border-b border-slate-800 flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-white">Editar Departamento</h3>
@@ -629,9 +616,9 @@
                         </div>
                     </form>
                 </div>
-            </div>
+                </div>
 
-            <div id="modal-qr" class="hidden fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div id="modal-qr" class="hidden fixed inset-0 z-[80] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
                 <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col items-center p-8 relative text-slate-900">
                     <button onclick="cerrarModalQR()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
                     
@@ -648,11 +635,64 @@
                         </button>
                     </div>
                 </div>
-            </div>
+                </div>
 
-        </main>
+                <div id="modal-historial" class="hidden fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
+                            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <i data-lucide="history" class="w-5 h-5 text-emerald-400"></i> Historial: <span id="historial-equipo-nombre" class="text-slate-300 font-normal"></span>
+                            </h3>
+                            <button onclick="cerrarModalHistorial()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-lg transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        </div>
+                        <div class="p-6 overflow-y-auto flex-1">
+                            <div class="relative border-l border-slate-700 ml-3 space-y-6 pb-4" id="contenedor-historial-timeline">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="view-publico-qr" class="fixed inset-0 z-[200] bg-slate-950 hidden flex-col items-center justify-center p-4 overflow-y-auto">
+                <div id="modal-reparacion" class="hidden fixed inset-0 z-[90] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
+                        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-orange-500/10 rounded-t-2xl">
+                            <h3 class="text-lg font-semibold text-orange-400 flex items-center gap-2">
+                                <i data-lucide="clipboard-list" class="w-5 h-5"></i> Diagnóstico: <span id="rep-modal-nombre" class="text-white"></span>
+                            </h3>
+                            <button onclick="cerrarModalReparacion()" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        </div>
+                    
+                        <form id="form-reparacion" class="p-5 space-y-4">
+                            <input type="hidden" id="rep-equipo-id">
+                        
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-2">Fotografía de Evidencia</label>
+                                <div class="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-orange-500 hover:bg-slate-800/50 transition-colors relative">
+                                    <input type="file" id="rep-foto-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                    <div id="rep-foto-placeholder" class="flex flex-col items-center justify-center pointer-events-none">
+                                        <i data-lucide="image-plus" class="w-8 h-8 text-slate-500 mb-2"></i>
+                                        <p class="text-sm text-slate-400">Haz clic o arrastra una imagen aquí</p>
+                                    </div>
+                                    <img id="rep-foto-preview" class="hidden max-h-40 mx-auto rounded-lg shadow-md mt-2 object-contain" alt="Vista previa">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Detalle del estado / Proceso de reparación</label>
+                                <textarea id="rep-detalle-texto" rows="4" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500 resize-none" placeholder="Ej: Pantalla rota. Se solicitó el repuesto el día de hoy..."></textarea>
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800 mt-4">
+                                <button type="button" onclick="cerrarModalReparacion()" class="px-4 py-2 text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Cancelar</button>
+                                <button type="submit" id="btn-guardar-rep" class="px-4 py-2 text-white bg-orange-600 hover:bg-orange-500 rounded-lg text-sm flex items-center gap-2">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Guardar Reporte
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+
+            <div id="view-publico-qr" class="fixed inset-0 z-[200] bg-slate-950 hidden flex-col items-center justify-center p-4 overflow-y-auto">
                 <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-black relative">
                     <button onclick="cerrarVistaPublica()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
                     
@@ -690,9 +730,9 @@
                     </div>
                 </div>
             </div>
-    </div>
+        </div>
 
-    <script>
+        <script>
         lucide.createIcons();
 
         function toggleSidebar() {
@@ -763,7 +803,24 @@
             if (window.innerWidth < 768) toggleSidebar();
         }
 
-        let usuarioActual = null; 
+        let usuarioActual = null;
+
+        // ==========================================
+        // FUNCIÓN GLOBAL: REGISTRAR EN HISTORIAL
+        // ==========================================
+        window.registrarHistorial = async function(equipoId, accion, detalles) {
+            try {
+                await window.addDoc(window.collection(window.db, "historial_equipos"), {
+                    equipoId: equipoId,
+                    accion: accion,
+                    detalles: detalles,
+                    fecha: new Date().toISOString(),
+                    usuario: usuarioActual.email // Guardamos quién hizo el cambio
+                });
+            } catch (error) {
+                console.error("Error guardando historial:", error);
+            }
+        }
 
         // ------------------------------------
         // LÓGICA AUTH Y ACCESOS
@@ -887,7 +944,8 @@
                     asignadoA: "", registradoPor: usuarioActual.email, fechaRegistro: new Date().toISOString() 
                 };
                 
-                await window.addDoc(window.collection(window.db, "equipos"), nuevoEquipo);
+                const docRef = await window.addDoc(window.collection(window.db, "equipos"), nuevoEquipo);
+                await window.registrarHistorial(docRef.id, "Creación", `Equipo registrado inicialmente en estado: ${nuevoEquipo.estado}.`);
                 document.getElementById('form-equipo').reset(); cargarEquipos();
             } catch (error) { console.error(error); alert("Error al guardar."); } 
             finally { btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Equipo'; lucide.createIcons(); btn.disabled = false; }
@@ -913,6 +971,9 @@
                     const botonesAccion = (usuarioActual.rol === 'admin' || usuarioActual.rol === 'supervisor') ? `
                         <button onclick="generarYMostrarQR('${id}', '${eq.nombre}', '${eq.codigo}')" class="text-purple-400 hover:text-purple-300 p-1.5 bg-purple-400/10 rounded" title="Generar Etiqueta QR">
                             <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="abrirModalHistorial('${id}', '${eq.nombre}')" class="text-emerald-400 hover:text-emerald-300 p-1.5 bg-emerald-400/10 rounded" title="Ver Historial">
+                            <i data-lucide="history" class="w-4 h-4"></i>
                         </button>
                         <button onclick="abrirModal('${id}', '${eq.nombre}', '${eq.estado}', '${eq.asignadoA}')" class="text-blue-400 hover:text-blue-300 p-1.5 bg-blue-400/10 rounded" title="Editar">
                             <i data-lucide="edit" class="w-4 h-4"></i>
@@ -963,7 +1024,11 @@
                     nombre: document.getElementById('edit-nombre').value, 
                     estado: document.getElementById('edit-estado').value, 
                     asignadoA: document.getElementById('edit-asignado').value 
-                }); 
+                });
+                
+                const estadoNuevo = document.getElementById('edit-estado').value;
+                const asignadoNuevo = document.getElementById('edit-asignado').value || 'Nadie';
+                await window.registrarHistorial(id, "Actualización", `Estado actualizado a: ${estadoNuevo} | Asignado a: ${asignadoNuevo}`);
                 cerrarModal(); cargarEquipos(); 
             } 
             catch (error) { alert("Error al editar"); }
@@ -1268,16 +1333,27 @@
                     const eq = doc.data(); const id = doc.id;
                     const fecha = new Date(eq.fechaRegistro).toLocaleDateString();
 
+                    // Dentro de cargarTaller(), reemplaza el HTML de la fila por esto:
+                    const tieneDiagnostico = eq.detalleReparacion ? `<span class="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded ml-2 border border-orange-500/30" title="${eq.detalleReparacion}"><i data-lucide="clipboard-list" class="w-3 h-3 inline"></i> Con reporte</span>` : '';
+                    const tieneFoto = eq.fotoReparacion ? `<a href="${eq.fotoReparacion}" target="_blank" class="text-blue-400 hover:text-blue-300 ml-1" title="Ver foto adjunta"><i data-lucide="image" class="w-4 h-4 inline"></i></a>` : '';
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-800/30 transition-colors">
                             <td class="p-4">
                                 <div class="flex items-center gap-2 text-slate-300 font-medium"><i data-lucide="qr-code" class="w-4 h-4 text-slate-500"></i> ${eq.codigo || '-'}</div>
                                 <div class="text-xs font-mono text-slate-500 mt-1">${eq.serie || 'S/N: N/A'}</div>
                             </td>
-                            <td class="p-4"><p class="text-white">${eq.nombre}</p><p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''}</p></td>
+                            <td class="p-4">
+                                <p class="text-white">${eq.nombre} ${tieneFoto}</p>
+                                <p class="text-xs text-slate-500">${eq.marca} ${eq.modelo || ''} ${tieneDiagnostico}</p>
+                            </td>
                             <td class="p-4"><span class="text-slate-300">${eq.asignadoA || '<span class="italic text-slate-600">Nadie</span>'}</span></td>
                             <td class="p-4 text-slate-400">${fecha}</td>
                             <td class="p-4 text-right space-x-2">
+                                <button onclick="abrirModalReparacion('${id}', '${eq.nombre}')" class="text-orange-400 hover:text-orange-300 px-3 py-1.5 bg-orange-400/10 rounded font-medium text-xs transition-colors" title="Añadir Diagnóstico y Foto">
+                                    <i data-lucide="clipboard-edit" class="w-3 h-3 inline mr-1"></i> Reporte
+                                </button>
+
                                 <button onclick="cambiarEstadoTaller('${id}', 'Disponible')" class="text-green-400 hover:text-green-300 px-3 py-1.5 bg-green-400/10 rounded font-medium text-xs transition-colors" title="Marcar como Reparado">
                                     <i data-lucide="wrench" class="w-3 h-3 inline mr-1"></i> Reparado
                                 </button>
@@ -1301,6 +1377,7 @@
             if(confirm(msj)) {
                 try {
                     await window.updateDoc(window.doc(window.db, "equipos", idEquipo), { estado: nuevoEstado });
+                    await window.registrarHistorial(idEquipo, "Mantenimiento Taller", `El técnico cambió el estado a: ${nuevoEstado}`);
                     cargarTaller(); // Recargamos el taller para que el equipo desaparezca de esta vista
                 } catch(error) {
                     console.error("Error cambiando estado:", error);
@@ -1504,42 +1581,79 @@
             }
         }
 
-        window.exportarCSV = function() {
-            if(datosReporteActual.length === 0) return alert("No hay datos para exportar.");
+        // ==========================================
+        // EXPORTAR REPORTE A EXCEL (.XLSX)
+        // ==========================================
+        window.exportarReporteExcel = function() {
+            // Verificamos que haya datos filtrados antes de exportar
+            if (!datosReporteActual || datosReporteActual.length === 0) {
+                return alert("No hay datos para exportar. Por favor, genera un reporte primero.");
+            }
             
-            // Creamos la cabecera del Excel (CSV)
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Código,Nombre,Marca,Modelo,Tipo,Estado,Asignado A,Departamento,Ubicación Física,Fecha Registro\n";
+            // 1. Mapeamos y limpiamos los datos para que las cabeceras en Excel se vean profesionales
+            const datosParaExcel = datosReporteActual.map(eq => ({
+                "Código Interno": eq.codigo || 'N/A',
+                "Nombre del Equipo": eq.nombre || '',
+                "Tipo": eq.tipo || '',
+                "Marca": eq.marca || '',
+                "Modelo": eq.modelo || '',
+                "Número de Serie": eq.serie || 'N/A',
+                "Estado Actual": eq.estado || '',
+                "Asignado A": eq.asignadoA || 'Sin asignar',
+                "Departamento": eq.deptoAsignado || 'No definido',
+                "Ubicación Física": eq.ubicacion || '',
+                "Fecha de Registro": new Date(eq.fechaRegistro).toLocaleDateString()
+            }));
 
-            // Llenamos las filas
-            datosReporteActual.forEach(eq => {
-                const row = [
-                    eq.codigo || '',
-                    `"${eq.nombre || ''}"`, // Comillas por si el nombre tiene comas adentro
-                    `"${eq.marca || ''}"`,
-                    `"${eq.modelo || ''}"`,
-                    eq.tipo || '',
-                    eq.estado || '',
-                    `"${eq.asignadoA || ''}"`,
-                    `"${eq.deptoAsignado || ''}"`,
-                    `"${eq.ubicacion || ''}"`,
-                    new Date(eq.fechaRegistro).toLocaleDateString()
-                ].join(",");
-                csvContent += row + "\n";
-            });
+            // 2. Usamos SheetJS para crear la hoja y el libro de Excel
+            const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
+            const workbook = XLSX.utils.book_new();
+            
+            // Ajustamos el ancho de las columnas para que se vea mejor (opcional pero recomendado)
+            const anchosColumnas = [
+                { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, 
+                { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, 
+                { wch: 20 }, { wch: 20 }, { wch: 15 }
+            ];
+            worksheet['!cols'] = anchosColumnas;
 
-            // Disparamos la descarga
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Inventario_Reporte_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte Filtrado");
+
+            // 3. Generamos el archivo con la fecha del día y forzamos la descarga
+            const fechaActual = new Date().toLocaleDateString().replace(/\//g, '-');
+            XLSX.writeFile(workbook, `LorHels_Reporte_${fechaActual}.xlsx`);
         }
         
+        // ==========================================
+        // IMPRIMIR REPORTE (CON LOGO Y METADATOS)
+        // ==========================================
         window.imprimirReporte = function() {
-            window.print(); // Llama al menú de impresión del navegador
+            if (!datosReporteActual || datosReporteActual.length === 0) {
+                return alert("No hay datos para imprimir. Genera un reporte primero.");
+            }
+
+            // 1. Recolectamos los nombres de los filtros que el usuario seleccionó
+            const selEstado = document.getElementById('rep-filtro-estado');
+            const estadoTxt = selEstado.options[selEstado.selectedIndex].text;
+            
+            const selTipo = document.getElementById('rep-filtro-tipo');
+            const tipoTxt = selTipo.options[selTipo.selectedIndex].text;
+            
+            const selDepto = document.getElementById('rep-filtro-depto');
+            const deptoTxt = selDepto.options[selDepto.selectedIndex].text;
+
+            // 2. Obtenemos la fecha y hora exacta
+            const fechaActual = new Date().toLocaleString();
+
+            // 3. Escribimos esta información en el encabezado de impresión
+            document.getElementById('print-fecha-filtros').innerText = 
+                `Generado el: ${fechaActual} | Filtros: ${estadoTxt} - ${tipoTxt} - ${deptoTxt}`;
+            
+            // Recargamos los iconos de Lucide por si acaso
+            lucide.createIcons();
+
+            // 4. Disparamos la impresión
+            window.print();
         }
 
         // ==========================================
@@ -1658,49 +1772,299 @@
             window.location.reload();
         }
 
-    </script>
+        window.abrirModalHistorial = async function(equipoId, nombreEquipo) {
+            document.getElementById('historial-equipo-nombre').innerText = nombreEquipo;
+            const contenedor = document.getElementById('contenedor-historial-timeline');
+            contenedor.innerHTML = '<p class="text-slate-400 text-sm ml-6"><i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-2"></i> Cargando historial...</p>';
+            lucide.createIcons();
+            document.getElementById('modal-historial').classList.remove('hidden');
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyA640_DXwhEU1tLEvoPyJiUNmm1t4qu7uo",
-            authDomain: "heinsen-stockstaff.firebaseapp.com",
-            projectId: "heinsen-stockstaff",
-            storageBucket: "heinsen-stockstaff.firebasestorage.app",
-            messagingSenderId: "755879092395",
-            appId: "1:755879092395:web:9cce29ea0de578ffd4d7ee"
-        };
-
-        const app = initializeApp(firebaseConfig); 
-        const db = getFirestore(app); 
-        const auth = getAuth(app);
-
-        window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; 
-        window.doc = doc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; 
-        window.getDoc = getDoc; window.setDoc = setDoc; window.query = query; window.where = where;
-        window.auth = auth; window.signInWithEmailAndPassword = signInWithEmailAndPassword; window.signOut = signOut;
-
-        // EL "GUARDIA" DE FIREBASE
-        onAuthStateChanged(auth, (user) => { 
-            const parametrosURL = new URLSearchParams(window.location.search);
-            const idEquipoEscaneado = parametrosURL.get('ver_equipo');
-
-            if (idEquipoEscaneado) {
-                // PRIORIDAD 1: Si hay un escaneo de QR, ignoramos el login y mostramos la tarjeta
-                window.comprobarSiVienePorEscaneoQR();
-            } else {
-                // PRIORIDAD 2: Flujo normal de la app (pedir contraseña o entrar)
-                if (user) {
-                    window.manejarUsuarioLogueado(user);
-                } else {
-                    // Restauramos la función original de deslogueo
-                    window.manejarUsuarioDeslogueado();
+            try {
+                const q = window.query(window.collection(window.db, "historial_equipos"), window.where("equipoId", "==", equipoId));
+                const snapshot = await window.getDocs(q);
+                
+                if (snapshot.empty) {
+                    contenedor.innerHTML = '<div class="ml-6 bg-slate-800/50 p-4 rounded-lg border border-slate-700 text-center"><p class="text-slate-400 text-sm italic">No hay registros de movimientos para este equipo aún.</p></div>';
+                    return;
                 }
+
+                // Convertimos a array y ordenamos por fecha (del más reciente al más antiguo)
+                let historial = [];
+                snapshot.forEach(doc => historial.push(doc.data()));
+                historial.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+                contenedor.innerHTML = '';
+                historial.forEach(item => {
+                    const fechaFormat = new Date(item.fecha).toLocaleString();
+                    
+                    // Elegir iconos y colores según la acción
+                    let icono = 'activity'; let colorIcono = 'text-blue-400'; let bgIcono = 'bg-blue-900';
+                    if(item.accion === 'Creación') { icono = 'plus'; colorIcono = 'text-green-400'; bgIcono = 'bg-green-900'; }
+                    if(item.accion.includes('Mantenimiento')) { icono = 'wrench'; colorIcono = 'text-orange-400'; bgIcono = 'bg-orange-900'; }
+
+                    contenedor.innerHTML += `
+                        <div class="relative pl-6">
+                            <span class="absolute -left-[17px] top-1 flex h-8 w-8 items-center justify-center rounded-full ${bgIcono} ring-4 ring-slate-900">
+                                <i data-lucide="${icono}" class="h-4 w-4 ${colorIcono}"></i>
+                            </span>
+                            <div class="flex flex-col flex-1 gap-1 border border-slate-800 bg-slate-900/50 p-4 rounded-xl shadow-sm hover:bg-slate-800/80 transition-colors">
+                                <div class="flex justify-between items-start mb-1">
+                                    <h4 class="text-sm font-bold text-white">${item.accion}</h4>
+                                    <span class="text-xs font-mono text-slate-500 bg-slate-950 px-2 py-1 rounded">${fechaFormat}</span>
+                                </div>
+                                <p class="text-sm text-slate-300 leading-relaxed">${item.detalles}</p>
+                                <p class="text-xs text-slate-500 mt-2 border-t border-slate-800/50 pt-2 flex items-center gap-1">
+                                    <i data-lucide="user-check" class="w-3 h-3"></i> Usuario: <span class="font-medium text-slate-400">${item.usuario}</span>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error("Error obteniendo historial:", error);
+                contenedor.innerHTML = '<p class="text-red-400 text-sm ml-6">Hubo un error al cargar el historial.</p>';
+            }
+        }
+
+        window.cerrarModalHistorial = function() {
+            document.getElementById('modal-historial').classList.add('hidden');
+        }
+
+        // ==========================================
+        // MÓDULO DE REPARACIÓN Y CLOUDINARY
+        // ==========================================
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/programmer-app-web/image/upload";
+        const CLOUDINARY_UPLOAD_PRESET = "LorHels Auth"; // Debe ser un preset "unsigned"
+
+        // Mostrar vista previa de la imagen al seleccionarla
+        document.getElementById('rep-foto-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('rep-foto-preview').src = e.target.result;
+                    document.getElementById('rep-foto-preview').classList.remove('hidden');
+                    document.getElementById('rep-foto-placeholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
             }
         });
-    </script>
-</body>
+
+        window.abrirModalReparacion = async function(id, nombre) {
+            document.getElementById('rep-equipo-id').value = id;
+            document.getElementById('rep-modal-nombre').innerText = nombre;
+            
+            // Limpiar formulario anterior
+            document.getElementById('form-reparacion').reset();
+            document.getElementById('rep-foto-preview').classList.add('hidden');
+            document.getElementById('rep-foto-preview').src = "";
+            document.getElementById('rep-foto-placeholder').classList.remove('hidden');
+            
+            // Obtener datos actuales por si ya tenía un reporte
+            try {
+                const docSnap = await window.getDoc(window.doc(window.db, "equipos", id));
+                if (docSnap.exists() && docSnap.data().detalleReparacion) {
+                    document.getElementById('rep-detalle-texto').value = docSnap.data().detalleReparacion;
+                    if(docSnap.data().fotoReparacion) {
+                        document.getElementById('rep-foto-preview').src = docSnap.data().fotoReparacion;
+                        document.getElementById('rep-foto-preview').classList.remove('hidden');
+                        document.getElementById('rep-foto-placeholder').classList.add('hidden');
+                    }
+                }
+            } catch(e) {}
+
+            document.getElementById('modal-reparacion').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        window.cerrarModalReparacion = function() {
+            document.getElementById('modal-reparacion').classList.add('hidden');
+        }
+
+        document.getElementById('form-reparacion').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('rep-equipo-id').value;
+            const detalle = document.getElementById('rep-detalle-texto').value;
+            const fileInput = document.getElementById('rep-foto-input');
+            const btn = document.getElementById('btn-guardar-rep');
+            
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...';
+            btn.disabled = true;
+            lucide.createIcons();
+
+            try {
+                let fotoUrl = null;
+
+                // 1. Subir imagen a Cloudinary si el usuario seleccionó una
+                if (fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+                    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+                    const response = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+                    const data = await response.json();
+                    
+                    if(data.secure_url) {
+                        fotoUrl = data.secure_url;
+                    } else {
+                        throw new Error("Error al subir a Cloudinary");
+                    }
+                }
+
+                // 2. Actualizar Firebase
+                const actualizacion = { detalleReparacion: detalle };
+                if (fotoUrl) actualizacion.fotoReparacion = fotoUrl;
+
+                await window.updateDoc(window.doc(window.db, "equipos", id), actualizacion);
+
+                // 3. Registrar en el Historial (Si implementaste el módulo de historial)
+                if (window.registrarHistorial) {
+                    await window.registrarHistorial(id, "Diagnóstico Actualizado", `El técnico dejó una nota: "${detalle}"`);
+                }
+
+                cerrarModalReparacion();
+                cargarTaller(); // Refrescar la tabla del taller
+            } catch (error) {
+                console.error(error);
+                alert("Error al guardar el reporte.");
+            } finally {
+                btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Reporte';
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        });
+
+        // ==========================================
+        // IMPORTACIÓN MASIVA DESDE EXCEL (.XLSX)
+        // ==========================================
+        window.activarImportacionExcel = function() {
+            if (!usuarioActual || usuarioActual.rol === 'usuario') {
+                return alert("No tienes permisos para importar equipos.");
+            }
+            // Hacemos clic en el input oculto
+            document.getElementById('input-importar-excel').click();
+        }
+
+        window.procesarImportacionExcel = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    // 1. Leer el archivo Excel usando SheetJS
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Tomamos la primera hoja del Excel
+                    const primeraHoja = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[primeraHoja];
+                    
+                    // Convertimos la hoja a un Arreglo de Objetos JSON
+                    const equiposImportados = XLSX.utils.sheet_to_json(worksheet);
+
+                    if (equiposImportados.length === 0) {
+                        alert("El archivo Excel parece estar vacío.");
+                        return;
+                    }
+
+                    if (!confirm(`¿Deseas importar ${equiposImportados.length} equipos a tu base de datos?`)) return;
+
+                    let agregados = 0;
+                    
+                    // 2. Subir cada fila a Firebase
+                    for (const fila of equiposImportados) {
+                        // Tratamos de adivinar las columnas por si el usuario usa mayúsculas o minúsculas
+                        const nuevoEquipo = {
+                            codigo: fila["Código"] || fila["Codigo"] || fila["codigo"] || `HS-IMP-${Math.floor(Math.random()*10000)}`,
+                            nombre: fila["Nombre"] || fila["nombre"] || fila["Nombre del Equipo"] || "Equipo Importado",
+                            tipo: fila["Tipo"] || fila["tipo"] || "Otro",
+                            marca: fila["Marca"] || fila["marca"] || "Genérica",
+                            modelo: fila["Modelo"] || fila["modelo"] || "",
+                            serie: String(fila["Serie"] || fila["serie"] || fila["Número de Serie"] || ""),
+                            imei: String(fila["IMEI"] || fila["imei"] || ""),
+                            mac: String(fila["MAC"] || fila["mac"] || ""),
+                            ubicacion: fila["Ubicación"] || fila["ubicacion"] || fila["Ubicación Física"] || "Almacén",
+                            estado: fila["Estado"] || fila["estado"] || "Disponible",
+                            asignadoA: fila["Asignado A"] || fila["asignadoA"] || "",
+                            registradoPor: usuarioActual.email,
+                            fechaRegistro: new Date().toISOString()
+                        };
+
+                        // Subimos a Firebase
+                        const docRef = await window.addDoc(window.collection(window.db, "equipos"), nuevoEquipo);
+                        
+                        // Si ya programaste el módulo de historial de la sugerencia anterior, agregamos la trazabilidad
+                        if (window.registrarHistorial) {
+                            await window.registrarHistorial(docRef.id, "Creación Masiva (Excel)", `Importado desde archivo. Estado inicial: ${nuevoEquipo.estado}`);
+                        }
+                        
+                        agregados++;
+                    }
+
+                    alert(`¡Importación exitosa! Se agregaron ${agregados} equipos correctamente.`);
+                    cargarEquipos(); 
+                    cargarDashboard(); 
+
+                } catch (error) {
+                    console.error("Error al importar Excel:", error);
+                    alert("Hubo un error al leer el archivo. Asegúrate de que sea un archivo .xlsx válido.");
+                }
+                
+                // Limpiamos el valor del input para que permita subir el mismo archivo otra vez si hay error
+                event.target.value = '';
+                lucide.createIcons();
+            };
+            
+            // Iniciar la lectura del archivo
+            reader.readAsArrayBuffer(file);
+        }
+
+        </script>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+            import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+            import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyCJFvU_79q8BiOrsV3WqqzQk1Xru6nozJ8",
+                authDomain: "lorhels-stockstaff.firebaseapp.com",
+                projectId: "lorhels-stockstaff",
+                storageBucket: "lorhels-stockstaff.firebasestorage.app",
+                messagingSenderId: "259287416427",
+                appId: "1:259287416427:web:8fb74ec2cdec82a562fb2e"
+            };
+
+            const app = initializeApp(firebaseConfig); 
+            const db = getFirestore(app); 
+            const auth = getAuth(app);
+
+            window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; 
+            window.doc = doc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; 
+            window.getDoc = getDoc; window.setDoc = setDoc; window.query = query; window.where = where;
+            window.auth = auth; window.signInWithEmailAndPassword = signInWithEmailAndPassword; window.signOut = signOut;
+
+            // EL "GUARDIA" DE FIREBASE
+            onAuthStateChanged(auth, (user) => { 
+                const parametrosURL = new URLSearchParams(window.location.search);
+                const idEquipoEscaneado = parametrosURL.get('ver_equipo');
+
+                if (idEquipoEscaneado) {
+                    // PRIORIDAD 1: Si hay un escaneo de QR, ignoramos el login y mostramos la tarjeta
+                    window.comprobarSiVienePorEscaneoQR();
+                } else {
+                    // PRIORIDAD 2: Flujo normal de la app (pedir contraseña o entrar)
+                    if (user) {
+                        window.manejarUsuarioLogueado(user);
+                    } else {
+                        // Restauramos la función original de deslogueo
+                        window.manejarUsuarioDeslogueado();
+                    }
+                }
+            });
+        </script>
+    </body>
 </html>
