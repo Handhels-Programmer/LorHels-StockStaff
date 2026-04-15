@@ -693,40 +693,80 @@
             </main>
 
             <div id="view-publico-qr" class="fixed inset-0 z-[200] bg-slate-950 hidden flex-col items-center justify-center p-4 overflow-y-auto">
-                <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-black relative">
+                <div class="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-black relative my-auto">
                     <button onclick="cerrarVistaPublica()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
                     
-                    <div class="flex justify-center mb-6">
-                        <div class="bg-blue-600/20 p-4 rounded-full text-blue-400 border-4 border-blue-500/20">
-                            <i data-lucide="monitor-smartphone" class="w-12 h-12"></i>
+                    <div class="flex flex-col items-center mb-6 border-b border-slate-800 pb-6">
+                        <div class="bg-blue-600/20 p-4 rounded-full text-blue-400 border-4 border-blue-500/20 mb-4">
+                            <i data-lucide="monitor-smartphone" class="w-10 h-10"></i>
                         </div>
-                    </div>
-                    
-                    <div class="text-center mb-8 border-b border-slate-800 pb-6">
-                        <span id="pub-estado" class="inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border bg-green-500/10 text-green-400 border-green-500/20">Cargando...</span>
-                        <h2 id="pub-nombre" class="text-2xl font-bold text-white mb-1">Cargando equipo...</h2>
-                        <p id="pub-codigo" class="text-slate-400 font-mono tracking-wider">...</p>
+                        <span id="pub-estado" class="inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border">Cargando...</span>
+                        <h2 id="pub-nombre" class="text-2xl md:text-3xl font-bold text-white mb-1 text-center">Cargando equipo...</h2>
+                        <p id="pub-codigo" class="text-slate-400 font-mono tracking-widest text-lg">...</p>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Asignado a</p>
-                            <p id="pub-asignado" class="text-slate-200 font-medium flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ...</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-4 w-full">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Marca / Modelo</p>
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Asignado a</p>
+                                <p id="pub-asignado" class="text-slate-200 font-medium flex items-center gap-2">...</p>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Ubicación Física</p>
+                                <p id="pub-ubicacion" class="text-slate-200 font-medium flex items-center gap-2">...</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Marca</p>
                                 <p id="pub-marca" class="text-slate-200 font-medium truncate">...</p>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Modelo</p>
+                                <p id="pub-modelo" class="text-slate-200 font-medium truncate">...</p>
                             </div>
                             <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
                                 <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Tipo</p>
                                 <p id="pub-tipo" class="text-slate-200 font-medium truncate">...</p>
                             </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">N° de Serie</p>
+                                <p id="pub-serie" class="text-slate-200 font-mono text-sm tracking-wider truncate">...</p>
+                            </div>
                         </div>
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                            <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Número de Serie</p>
-                            <p id="pub-serie" class="text-slate-200 font-mono text-sm tracking-wider">...</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="pub-red-container">
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800" id="pub-div-mac">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Dirección MAC</p>
+                                <p id="pub-mac" class="text-slate-200 font-mono text-sm tracking-wider">...</p>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800" id="pub-div-imei">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">IMEI</p>
+                                <p id="pub-imei" class="text-slate-200 font-mono text-sm tracking-wider">...</p>
+                            </div>
                         </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center text-sm">
+                            <div>
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Registrado por</p>
+                                <p id="pub-registrado" class="text-slate-300">...</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-slate-500 mb-1 uppercase font-semibold">Fecha de Registro</p>
+                                <p id="pub-fecha" class="text-slate-300">...</p>
+                            </div>
+                        </div>
+
+                        <div id="pub-div-reparacion" class="hidden bg-orange-500/10 p-5 rounded-xl border border-orange-500/20 mt-4">
+                            <p class="text-sm text-orange-400 mb-2 uppercase font-bold flex items-center gap-2">
+                                <i data-lucide="wrench" class="w-4 h-4"></i> Notas de Taller / Reparación
+                            </p>
+                            <p id="pub-reparacion-texto" class="text-slate-200 text-sm mb-4 leading-relaxed">...</p>
+                            <img id="pub-reparacion-foto" src="" class="hidden max-w-full md:max-w-sm rounded-lg shadow-lg border border-slate-700">
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -1709,44 +1749,80 @@
         }
 
         // ==========================================
-        // DETECCIÓN DE ESCANEO (LECTOR DE URL)
+        // DETECCIÓN DE ESCANEO Y PERFIL PÚBLICO
         // ==========================================
         window.comprobarSiVienePorEscaneoQR = async function() {
             const parametrosURL = new URLSearchParams(window.location.search);
             const idEquipoEscaneado = parametrosURL.get('ver_equipo');
 
             if (idEquipoEscaneado) {
-                // 1. Ocultamos el login y la aplicación principal
+                // 1. Ocultar lo que no necesitamos
                 document.getElementById('view-login').classList.add('hidden');
                 document.getElementById('app-container').classList.add('hidden');
                 
-                // 2. ✨ TRUCO DE MAGIA: Sacamos la vista del QR de su caja y la pegamos en la raíz de la página
+                // 2. Extraer y mostrar el modal
                 const vistaPublica = document.getElementById('view-publico-qr');
                 document.body.appendChild(vistaPublica); 
-                
-                // 3. Ahora sí, la mostramos con seguridad
                 vistaPublica.classList.remove('hidden');
                 vistaPublica.classList.add('flex');
 
                 try {
-                    // Firebase ya está listo, leemos la base de datos
                     const equipoRef = window.doc(window.db, "equipos", idEquipoEscaneado);
                     const docSnap = await window.getDoc(equipoRef);
 
                     if (docSnap.exists()) {
                         const eq = docSnap.data();
                         
+                        // Llenar Datos Básicos
                         document.getElementById('pub-nombre').innerText = eq.nombre;
                         document.getElementById('pub-codigo').innerText = eq.codigo || 'Sin código interno';
-                        document.getElementById('pub-asignado').innerHTML = `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${eq.asignadoA || '<span class="italic text-slate-600">No asignado</span>'}`;
-                        document.getElementById('pub-marca').innerText = `${eq.marca} ${eq.modelo || ''}`;
-                        document.getElementById('pub-tipo').innerText = eq.tipo;
+                        document.getElementById('pub-asignado').innerHTML = `<i data-lucide="user" class="w-4 h-4 text-slate-400"></i> ${eq.asignadoA || '<span class="italic text-slate-500">Sin asignar</span>'}`;
+                        document.getElementById('pub-ubicacion').innerHTML = `<i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i> ${eq.ubicacion || 'No especificada'}`;
+                        
+                        // Llenar Detalles Técnicos
+                        document.getElementById('pub-marca').innerText = eq.marca || 'N/A';
+                        document.getElementById('pub-modelo').innerText = eq.modelo || 'N/A';
+                        document.getElementById('pub-tipo').innerText = eq.tipo || 'N/A';
                         document.getElementById('pub-serie').innerText = eq.serie || 'N/A';
 
-                        // Estilos del estado
+                        // Llenar Datos de Red (Ocultar si están vacíos)
+                        if (eq.mac) {
+                            document.getElementById('pub-mac').innerText = eq.mac;
+                            document.getElementById('pub-div-mac').style.display = 'block';
+                        } else { document.getElementById('pub-div-mac').style.display = 'none'; }
+
+                        if (eq.imei) {
+                            document.getElementById('pub-imei').innerText = eq.imei;
+                            document.getElementById('pub-div-imei').style.display = 'block';
+                        } else { document.getElementById('pub-div-imei').style.display = 'none'; }
+
+                        // Si no tiene ni MAC ni IMEI, ocultamos toda la fila
+                        document.getElementById('pub-red-container').style.display = (!eq.mac && !eq.imei) ? 'none' : 'grid';
+
+                        // Llenar Metadatos
+                        document.getElementById('pub-registrado').innerText = eq.registradoPor || 'Sistema';
+                        document.getElementById('pub-fecha').innerText = eq.fechaRegistro ? new Date(eq.fechaRegistro).toLocaleDateString() : 'N/A';
+
+                        // Mostrar Panel de Reparación solo si tiene datos
+                        const divRep = document.getElementById('pub-div-reparacion');
+                        if (eq.detalleReparacion) {
+                            divRep.classList.remove('hidden');
+                            document.getElementById('pub-reparacion-texto').innerText = eq.detalleReparacion;
+                            
+                            if (eq.fotoReparacion) {
+                                document.getElementById('pub-reparacion-foto').src = eq.fotoReparacion;
+                                document.getElementById('pub-reparacion-foto').classList.remove('hidden');
+                            } else {
+                                document.getElementById('pub-reparacion-foto').classList.add('hidden');
+                            }
+                        } else {
+                            divRep.classList.add('hidden');
+                        }
+
+                        // Colorear el Badge del Estado
                         const badge = document.getElementById('pub-estado');
                         badge.innerText = eq.estado;
-                        badge.className = "inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ";
+                        badge.className = "inline-flex px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ";
                         
                         if(eq.estado === 'Disponible') badge.className += "bg-purple-500/10 text-purple-400 border-purple-500/20";
                         else if(eq.estado === 'Asignado') badge.className += "bg-green-500/10 text-green-400 border-green-500/20";
@@ -1758,6 +1834,7 @@
                         document.getElementById('pub-nombre').innerText = "Equipo no encontrado";
                         document.getElementById('pub-codigo').innerText = "El equipo fue eliminado o no existe.";
                         document.getElementById('pub-estado').style.display = 'none';
+                        document.querySelector('#view-publico-qr .space-y-4').style.display = 'none';
                     }
                 } catch (error) {
                     console.error("Error leyendo QR:", error);
